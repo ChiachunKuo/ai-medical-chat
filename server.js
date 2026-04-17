@@ -79,3 +79,4 @@ app.post("/chat", async (req, res) => {
 app.listen(PORT, () => {
   console.log("Server running on port", PORT);
 });
+console.log("GROQ KEY:", process.env.GROQ_API_KEY);
