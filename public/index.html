@@ -1,50 +1,36 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh">
 <head>
-  <meta charset="UTF-8">
-  <title>AI健康系統</title>
-
-  <!-- 📱 手機優化 -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AI智慧問診系統</title>
+<link rel="stylesheet" href="style.css"/>
 </head>
+
 <body>
 
-<!-- ⚠️ 醫療聲明（強制） -->
+<!-- 🚨 醫療聲明 -->
 <div id="modal">
   <div class="modal-box">
-    <h2>⚠️ 醫療聲明</h2>
-    <p>本系統僅供參考，不能取代醫師診斷</p>
-    <button onclick="accept()">我同意</button>
+    <h2>醫療聲明</h2>
+    <p>本系統僅供參考，不能取代醫師診斷，緊急請就醫。</p>
+    <button onclick="accept()">我已了解並進入</button>
   </div>
 </div>
 
-<header>🩺 AI健康問診系統</header>
+<!-- 💬 主畫面 -->
+<div class="container">
+  <h1>AI智慧問診</h1>
 
-<div id="chat"></div>
+  <div id="chat"></div>
 
-<!-- 📊 儀表板 -->
-<div id="dashboard">
-  <h3>📊 風險評估</h3>
-  <div id="riskBar"><div id="riskFill"></div></div>
-  <p id="riskText">--</p>
+  <div class="input-box">
+    <input id="input" placeholder="請描述症狀..." />
+    <button onclick="send()">送出</button>
+  </div>
 </div>
 
-<!-- 📍 地圖 -->
-<div id="map"></div>
-
-<!-- 🧠 問診流程 -->
-<div id="questionBox">
-  <p id="question">請描述您的主要症狀</p>
-  <input id="input">
-  <button onclick="nextStep()">下一步</button>
-</div>
-
-<script src="script.js"></script>
-
-<!-- 🔥 一定要加 libraries=places -->
-<script src="https://maps.googleapis.com/maps/api/js?key=你的GOOGLE_API_KEY&libraries=places"></script>
+<script src="app.js"></script>
 
 </body>
 </html>
