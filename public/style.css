@@ -1,37 +1,79 @@
-<!DOCTYPE html>
-<html lang="zh">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI智慧問診系統</title>
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #f4f6f8;
+}
 
-<!-- 🚨 醫療聲明 -->
-<div id="modal">
-  <div class="modal-box">
-    <h2>醫療聲明</h2>
-    <p>
-      本系統僅供健康資訊參考，不能取代專業醫師診斷。
-      若有緊急狀況請立即就醫或撥打急救電話。
-    </p>
-    <button onclick="accept()">我已了解並同意</button>
-  </div>
-</div>
+.container {
+  max-width: 600px;
+  margin: auto;
+  padding: 10px;
+}
 
-<!-- 💬 Chat UI -->
-<div class="container">
-  <h1>AI 智慧問診</h1>
+h1 {
+  text-align: center;
+}
 
-  <div id="chat"></div>
+/* chat */
+#chat {
+  height: 70vh;
+  overflow-y: auto;
+  background: white;
+  padding: 10px;
+  border-radius: 10px;
+}
 
-  <div class="input-box">
-    <input id="input" placeholder="請描述你的症狀..." />
-    <button onclick="send()">送出</button>
-  </div>
-</div>
+.msg {
+  margin: 10px 0;
+}
 
-<script src="app.js"></script>
-</body>
-</html>
+.user {
+  text-align: right;
+  color: blue;
+}
+
+.ai {
+  text-align: left;
+  color: green;
+}
+
+/* input */
+.input-box {
+  display: flex;
+  margin-top: 10px;
+}
+
+input {
+  flex: 1;
+  padding: 10px;
+}
+
+button {
+  padding: 10px;
+}
+
+/* modal */
+#modal {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-box {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 400px;
+}
+
+/* RWD */
+@media (max-width: 600px) {
+  #chat {
+    height: 65vh;
+  }
+}
