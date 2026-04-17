@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI智慧問診系統</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- 🚨 醫療聲明 -->
+<div id="modal">
+  <div class="modal-box">
+    <h2>醫療聲明</h2>
+    <p>
+      本系統僅供健康資訊參考，不能取代專業醫師診斷。
+      若有緊急狀況請立即就醫或撥打急救電話。
+    </p>
+    <button onclick="accept()">我已了解並同意</button>
+  </div>
+</div>
+
+<!-- 💬 Chat UI -->
+<div class="container">
+  <h1>AI 智慧問診</h1>
+
+  <div id="chat"></div>
+
+  <div class="input-box">
+    <input id="input" placeholder="請描述你的症狀..." />
+    <button onclick="send()">送出</button>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

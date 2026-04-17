@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>AI健康系統</title>
+
+  <!-- 📱 手機優化 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ⚠️ 醫療聲明（強制） -->
+<div id="modal">
+  <div class="modal-box">
+    <h2>⚠️ 醫療聲明</h2>
+    <p>本系統僅供參考，不能取代醫師診斷</p>
+    <button onclick="accept()">我同意</button>
+  </div>
+</div>
+
+<header>🩺 AI健康問診系統</header>
+
+<div id="chat"></div>
+
+<!-- 📊 儀表板 -->
+<div id="dashboard">
+  <h3>📊 風險評估</h3>
+  <div id="riskBar"><div id="riskFill"></div></div>
+  <p id="riskText">--</p>
+</div>
+
+<!-- 📍 地圖 -->
+<div id="map"></div>
+
+<!-- 🧠 問診流程 -->
+<div id="questionBox">
+  <p id="question">請描述您的主要症狀</p>
+  <input id="input">
+  <button onclick="nextStep()">下一步</button>
+</div>
+
+<script src="script.js"></script>
+
+<!-- 🔥 一定要加 libraries=places -->
+<script src="https://maps.googleapis.com/maps/api/js?key=你的GOOGLE_API_KEY&libraries=places"></script>
+
+</body>
+</html>
