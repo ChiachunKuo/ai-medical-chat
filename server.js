@@ -11,7 +11,7 @@ app.use(express.static("public"));
 const PORT = process.env.PORT || 3000;
 
 const HF_API =
-  "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct";
+"https://api-inference.huggingface.co/models/google/flan-t5-base";
 
 const HF_TOKEN = process.env.HF_TOKEN;
 
