@@ -9,29 +9,21 @@ function addMsg(text, type) {
   document.getElementById("chat").appendChild(div);
 }
 
-function addHospitalLink() {
-  const link = document.createElement("a");
-  link.href = "https://www.google.com/maps/search/hospital+near+me";
-  link.target = "_blank";
-  link.innerText = "🏥 點擊查看附近醫院 / 診所";
-  link.style.display = "block";
-  link.style.marginTop = "10px";
-  document.getElementById("chat").appendChild(link);
+function setLoading(show) {
+  document.getElementById("loading").style.display =
+    show ? "block" : "none";
 }
 
-let loading = false;
-
 window.send = async function () {
-  if (loading) return;
-
   const input = document.getElementById("input");
-  const text = input.value.trim();
-  if (!text) return;
+  const text = input.value;
 
-  loading = true;
+  if (!text) return;
 
   addMsg(text, "user");
   input.value = "";
+
+  setLoading(true);
 
   try {
     const res = await fetch("/chat", {
@@ -44,18 +36,9 @@ window.send = async function () {
 
     addMsg(data.reply, "ai");
 
-    // 🚨 判斷是否需要醫院
-    if (
-      data.reply.includes("需要就醫") ||
-      data.reply.includes("緊急") ||
-      data.reply.includes("高")
-    ) {
-      addHospitalLink();
-    }
-
   } catch (err) {
-    addMsg("系統錯誤", "ai");
+    addMsg("系統錯誤，請稍後再試", "ai");
   }
 
-  loading = false;
+  setLoading(false);
 };
