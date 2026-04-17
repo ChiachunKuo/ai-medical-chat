@@ -15,44 +15,62 @@ function addMsg(text, type) {
   document.getElementById("chat").appendChild(div);
 }
 
-// 🏥 根據嚴重程度推薦
-function openNearby(type) {
-  if (!navigator.geolocation) return fallback(type);
+// 🏥 建立「點擊式」按鈕（重點）
+function addHospitalButton(type) {
+  const btn = document.createElement("button");
 
-  navigator.geolocation.getCurrentPosition((pos) => {
-    const lat = pos.coords.latitude;
-    const lng = pos.coords.longitude;
+  if (type === "emergency") {
+    btn.innerText = "🚨 查看附近急診醫院";
+    btn.style.background = "red";
+  } else {
+    btn.innerText = "🏥 查看附近診所";
+  }
 
-    let keyword = "clinic";
-    if (type === "emergency") keyword = "hospital";
-    if (type === "normal") keyword = "clinic";
+  btn.style.marginTop = "10px";
 
-    const url = `https://www.google.com/maps/search/${keyword}/@${lat},${lng},15z`;
+  btn.onclick = () => {
+    if (!navigator.geolocation) {
+      fallback(type);
+      return;
+    }
 
-    window.open(url, "_blank");
-  }, () => fallback(type));
+    navigator.geolocation.getCurrentPosition((pos) => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+
+      let keyword = "clinic";
+      if (type === "emergency") keyword = "hospital";
+
+      const url = `https://www.google.com/maps/search/${keyword}/@${lat},${lng},15z`;
+
+      window.open(url, "_blank");
+    }, () => fallback(type));
+  };
+
+  document.getElementById("chat").appendChild(btn);
 }
 
+// fallback
 function fallback(type) {
   const keyword = type === "emergency" ? "hospital" : "clinic";
   window.open(`https://www.google.com/maps/search/${keyword}+near+me`);
 }
 
-// 🔍 判斷 AI 回應
+// 🔍 判斷 AI 結果
 function handleResult(text) {
 
   if (text.includes("可觀察")) {
-    addMsg("👉 建議先休息、多喝水、觀察症狀變化", "ai");
+    addMsg("👉 建議先休息、多喝水、觀察症狀", "ai");
   }
 
   if (text.includes("需要")) {
-    addMsg("👉 建議儘早前往診所就醫", "ai");
-    openNearby("normal");
+    addMsg("👉 建議安排門診就醫", "ai");
+    addHospitalButton("normal"); // 🔥 按鈕
   }
 
   if (text.includes("緊急") || text.includes("危急")) {
     addMsg("🚨 請立即前往急診", "ai");
-    openNearby("emergency");
+    addHospitalButton("emergency"); // 🔥 按鈕
   }
 }
 
