@@ -1,5 +1,4 @@
 import express from "express";
-import fetch from "node-fetch";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -10,93 +9,73 @@ app.use(express.static("public"));
 
 const PORT = process.env.PORT || 3000;
 
-const HF_API =
-"https://api-inference.huggingface.co/models/google/flan-t5-base";
+const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
-const HF_TOKEN = process.env.HF_TOKEN;
-
-// 🧠 醫療 Prompt（穩定版）
+// 🧠 醫療問診 Prompt（穩定版）
 function buildPrompt(input) {
-  return `<s>[INST]
-你是一個專業醫療問診AI。
+  return `
+你是一個專業醫療問診AI助手。
 
 規則：
 - 先問症狀，不要直接診斷
 - 每次最多問3個問題
-- 最後建議掛號科別
+- 最後要建議掛號科別
 - 語氣像醫生
 
-症狀：${input}
-[/INST]`;
+使用者症狀：${input}
+`;
 }
 
-// 🔁 HF API（穩定版 + retry）
-async function askAI(prompt, retry = 3) {
-  try {
-    const res = await fetch(HF_API, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${HF_TOKEN}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        inputs: prompt,
-        parameters: {
-          max_new_tokens: 250,
-          temperature: 0.7,
-          top_p: 0.9,
-          return_full_text: false
+// 🔥 Groq API 呼叫
+async function askAI(prompt) {
+  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${GROQ_API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      model: "llama3-8b-8192",
+      messages: [
+        {
+          role: "system",
+          content: "你是專業醫療問診AI，必須用醫生方式問診，不可直接診斷"
+        },
+        {
+          role: "user",
+          content: prompt
         }
-      })
-    });
+      ],
+      temperature: 0.7,
+      max_tokens: 300
+    })
+  });
 
-    const data = await res.json();
+  const data = await res.json();
 
-    console.log("HF RESPONSE:", JSON.stringify(data));
+  console.log("GROQ RESPONSE:", JSON.stringify(data));
 
-    // ❗ HF error handling
-    if (data?.error) throw new Error(data.error);
-
-    // ✔ array format
-    if (Array.isArray(data)) {
-      return data[0]?.generated_text || "無法解析回應";
-    }
-
-    // ✔ object format
-    if (data?.generated_text) {
-      return data.generated_text;
-    }
-
-    throw new Error("Unknown HF response format");
-  } catch (err) {
-    console.log("HF ERROR:", err.message);
-
-    if (retry > 0) {
-      console.log("retrying...", retry);
-      await new Promise(r => setTimeout(r, 2000));
-      return askAI(prompt, retry - 1);
-    }
-
-    return "AI暫時繁忙，請稍後再試";
+  if (!res.ok) {
+    throw new Error(data.error?.message || "Groq API error");
   }
+
+  return data.choices[0].message.content;
 }
 
+// 💬 Chat API
 app.post("/chat", async (req, res) => {
   try {
     const userMessage = req.body.message;
 
-    const prompt = buildPrompt(userMessage);
-    const reply = await askAI(prompt);
+    const reply = await askAI(buildPrompt(userMessage));
 
     res.json({ reply });
   } catch (err) {
-    console.log(err);
-    res.json({ reply: "系統錯誤，請稍後再試" });
+    console.log("ERROR:", err.message);
+    res.json({ reply: "系統暫時忙碌，請稍後再試" });
   }
 });
 
 app.listen(PORT, () => {
-  console.log("Server running on", PORT);
+  console.log("Server running on port", PORT);
 });
-
-console.log("HF RAW:", JSON.stringify(data, null, 2));
