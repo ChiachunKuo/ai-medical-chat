@@ -9,24 +9,20 @@
 
 <body>
 
-<!-- 🔐 醫療切結書 -->
+<!-- 🔐 切結書 -->
 <div id="modal">
   <div class="modal-box">
     <h2>醫療使用聲明</h2>
 
     <p>
-      本系統僅提供健康資訊與初步分流建議，<br>
-      不可取代專業醫師診斷與治療。<br><br>
-
-      使用本系統即表示您了解並同意：<br>
-      1. 本系統不提供醫療診斷<br>
-      2. 緊急情況請立即就醫<br>
-      3. 所有建議僅供參考<br>
+      本系統僅供參考，無法取代醫師診斷。<br><br>
+      若為緊急狀況請立即就醫。<br><br>
+      點擊「同意」代表您了解並接受以上內容。
     </p>
 
     <div class="modal-btns">
-      <button onclick="agree()">同意並進入</button>
-      <button onclick="decline()">不同意</button>
+      <button id="agreeBtn">同意並進入</button>
+      <button id="declineBtn">不同意</button>
     </div>
   </div>
 </div>
@@ -39,7 +35,7 @@
   <div id="loading">AI分析中...</div>
 
   <div class="input-box">
-    <input id="input" placeholder="請描述您的症狀...">
+    <input id="input" placeholder="請描述症狀...">
     <button onclick="send()">送出</button>
   </div>
 </div>
