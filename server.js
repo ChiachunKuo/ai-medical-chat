@@ -80,3 +80,23 @@ app.listen(PORT, () => {
   console.log("Server running on port", PORT);
 });
 console.log("GROQ KEY:", process.env.GROQ_API_KEY);
+const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${GROQ_API_KEY}`,
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    model: "llama3-8b-8192",
+    messages: [
+      { role: "user", content: prompt }
+    ],
+    temperature: 0.7,
+    max_tokens: 200
+  })
+});
+
+console.log("STATUS:", res.status);
+
+const text = await res.text();
+console.log("RAW RESPONSE:", text);
