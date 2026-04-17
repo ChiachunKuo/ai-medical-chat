@@ -1,6 +1,6 @@
 body {
-  margin: 0;
   font-family: Arial;
+  margin: 0;
   background: #f4f6f8;
 }
 
@@ -10,11 +10,6 @@ body {
   padding: 10px;
 }
 
-h1 {
-  text-align: center;
-}
-
-/* chat */
 #chat {
   height: 70vh;
   overflow-y: auto;
@@ -27,29 +22,21 @@ h1 {
   margin: 10px 0;
 }
 
-.user {
-  text-align: right;
-  color: blue;
-}
+.user { text-align: right; color: blue; }
+.ai { text-align: left; color: green; }
 
-.ai {
-  text-align: left;
-  color: green;
-}
-
-/* input */
 .input-box {
   display: flex;
   margin-top: 10px;
 }
 
-input {
-  flex: 1;
-  padding: 10px;
-}
+input { flex: 1; padding: 10px; }
+button { padding: 10px; }
 
-button {
-  padding: 10px;
+#loading {
+  display: none;
+  text-align: center;
+  color: gray;
 }
 
 /* modal */
@@ -66,14 +53,4 @@ button {
 .modal-box {
   background: white;
   padding: 20px;
-  border-radius: 10px;
-  width: 90%;
-  max-width: 400px;
-}
-
-/* RWD */
-@media (max-width: 600px) {
-  #chat {
-    height: 65vh;
-  }
 }
