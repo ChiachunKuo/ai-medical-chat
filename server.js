@@ -8,28 +8,34 @@ const app = express();
 app.use(express.json());
 app.use(express.static("public"));
 
-const HF_API = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct";
+const PORT = process.env.PORT || 3000;
+
+const HF_API =
+  "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct";
+
 const HF_TOKEN = process.env.HF_TOKEN;
 
-// 🧠 AI 問診 Prompt
-function buildPrompt(userInput) {
+// 🧠 醫療問診 Prompt（已優化）
+function buildPrompt(input) {
   return `<s>[INST]
-你是一個醫療問診AI助手，規則：
-1. 用問診方式回覆（先追問再判斷）
-2. 不要直接下診斷
-3. 最後要告訴可能掛哪一科（例如：內科、神經內科、耳鼻喉科）
-4. 回答要簡潔像醫生
+你是一個專業醫療問診AI助手。
 
-使用者症狀：${userInput}
+規則：
+- 先問症狀細節
+- 不可直接診斷
+- 每次最多問3個問題
+- 最後一定要建議掛號科別
+- 用自然醫生語氣
+
+使用者：${input}
 [/INST]`;
 }
 
-// 🤖 呼叫 Hugging Face
 async function askAI(prompt) {
   const res = await fetch(HF_API, {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${HF_TOKEN}`,
+      Authorization: `Bearer ${HF_TOKEN}`,
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
@@ -43,23 +49,24 @@ async function askAI(prompt) {
   });
 
   const data = await res.json();
-  return data?.[0]?.generated_text || "無法取得回應";
+
+  return data?.[0]?.generated_text || "AI暫時無回應";
 }
 
-// 💬 Chat API
 app.post("/chat", async (req, res) => {
   try {
-    const userInput = req.body.message;
-    const prompt = buildPrompt(userInput);
+    const userMessage = req.body.message;
 
-    const aiResponse = await askAI(prompt);
+    const prompt = buildPrompt(userMessage);
+    const reply = await askAI(prompt);
 
-    res.json({ reply: aiResponse });
+    res.json({ reply });
   } catch (err) {
+    console.log(err);
     res.json({ reply: "系統錯誤，請稍後再試" });
   }
 });
 
-app.listen(3000, () => {
-  console.log("Server running on port 3000");
+app.listen(PORT, () => {
+  console.log("Server running on", PORT);
 });
