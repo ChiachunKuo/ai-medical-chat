@@ -19,31 +19,15 @@ if (!GROQ_API_KEY) {
 // 🧠 醫療 prompt
 function buildPrompt(input) {
   return `
-你是一個「醫療分流AI」，你不是醫生。
+你是一個專業醫療問診AI。
 
-你的任務是做「就醫必要性評估」。
+規則：
+- 先問症狀細節
+- 不要直接診斷
+- 最後一定要建議掛號科別
+- 像醫生對話方式
 
-請嚴格輸出以下格式：
-
-【是否需要就醫】
-需要 / 可觀察 / 緊急
-
-【風險等級】
-低 / 中 / 高 / 危急
-
-【原因判斷】
-用白話解釋可能原因（1~2句）
-
-【建議行動】
-- 是否需要看醫生
-- 是否可先觀察
-- 是否建議急診
-
-【建議科別】
-如果需要就醫，請給科別（例如：內科/神經內科/急診/耳鼻喉科）
-
-使用者症狀：
-${input}
+使用者症狀：${input}
 `;
 }
 
@@ -57,56 +41,62 @@ async function askAI(prompt) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "llama-3.1-70b-versatile",
+        // ✅ 🔥 最新可用模型（重點修正）
+        model: "llama-3.1-8b-instant",
+
         messages: [
           {
             role: "system",
-            content: "你是醫療分流系統，只能做風險評估，不可診斷疾病"
+            content: "你是專業醫療問診AI，只能用問診方式回答，不可直接診斷"
           },
           {
             role: "user",
             content: prompt
           }
         ],
-        temperature: 0.4,
-        max_tokens: 400
+
+        temperature: 0.7,
+        max_tokens: 300
       })
     });
 
     const data = await res.json();
 
-    console.log("GROQ:", JSON.stringify(data));
+    console.log("GROQ RESPONSE:", JSON.stringify(data));
 
+    // ❗ API error handling
     if (!res.ok) {
-      throw new Error(data.error?.message || "Groq error");
+      throw new Error(data.error?.message || "Groq API error");
     }
 
-    return data.choices[0].message.content;
+    return data.choices?.[0]?.message?.content || "無回應";
 
   } catch (err) {
-    console.error(err);
-    return "系統忙碌，請稍後再試";
+    console.error("❌ GROQ ERROR:", err.message);
+
+    return "系統暫時忙碌，請稍後再試";
   }
 }
 
 // 💬 API
 app.post("/chat", async (req, res) => {
   try {
-    const message = req.body.message;
+    const userMessage = req.body.message;
 
-    if (!message) {
+    if (!userMessage) {
       return res.json({ reply: "請輸入症狀" });
     }
 
-    const reply = await askAI(buildPrompt(message));
+    const reply = await askAI(buildPrompt(userMessage));
 
     res.json({ reply });
 
   } catch (err) {
-    res.json({ reply: "系統錯誤" });
+    console.error(err);
+    res.json({ reply: "系統錯誤，請稍後再試" });
   }
 });
 
-app.listen(3000, () => {
-  console.log("V3 醫療分流系統啟動");
+app.listen(PORT, () => {
+  console.log("🚀 Server running on port", PORT);
 });
