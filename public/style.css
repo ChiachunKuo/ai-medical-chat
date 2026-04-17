@@ -10,10 +10,6 @@ body {
   padding: 10px;
 }
 
-h1 {
-  text-align: center;
-}
-
 #chat {
   height: 70vh;
   overflow-y: auto;
@@ -43,7 +39,6 @@ button { padding: 10px; }
   color: gray;
 }
 
-/* modal */
 #modal {
   position: fixed;
   width: 100%;
