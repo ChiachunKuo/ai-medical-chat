@@ -1,6 +1,6 @@
-function accept() {
+window.accept = function () {
   document.getElementById("modal").style.display = "none";
-}
+};
 
 function addMsg(text, type) {
   const div = document.createElement("div");
@@ -9,7 +9,7 @@ function addMsg(text, type) {
   document.getElementById("chat").appendChild(div);
 }
 
-async function send() {
+window.send = async function () {
   const input = document.getElementById("input");
   const text = input.value;
 
@@ -18,22 +18,25 @@ async function send() {
   addMsg(text, "user");
   input.value = "";
 
-  const res = await fetch("/chat", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({ message: text })
-  });
+  try {
+    const res = await fetch("/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: text })
+    });
 
-  const data = await res.json();
-  addMsg(data.reply, "ai");
+    const data = await res.json();
+    addMsg(data.reply, "ai");
 
-  // 🏥 自動加入掛號提示
-  addMsg("👉 建議可前往附近醫院，請點下方開啟地圖搜尋", "ai");
+    // 📍 附近醫院引導
+    const link = document.createElement("a");
+    link.href = "https://www.google.com/maps/search/hospital+near+me";
+    link.target = "_blank";
+    link.innerText = "📍 點我查看附近醫院";
 
-  const link = document.createElement("a");
-  link.innerText = "📍 開啟 Google Maps 搜尋附近醫院";
-  link.href = "https://www.google.com/maps/search/hospital+near+me";
-  link.target = "_blank";
+    document.getElementById("chat").appendChild(link);
 
-  document.getElementById("chat").appendChild(link);
-}
+  } catch (err) {
+    addMsg("系統錯誤，請稍後再試", "ai");
+  }
+};
