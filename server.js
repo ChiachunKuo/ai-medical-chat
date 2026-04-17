@@ -98,3 +98,5 @@ app.post("/chat", async (req, res) => {
 app.listen(PORT, () => {
   console.log("Server running on", PORT);
 });
+
+console.log("HF RAW:", JSON.stringify(data, null, 2));
