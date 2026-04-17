@@ -1,11 +1,11 @@
 body {
   margin: 0;
   font-family: Arial;
-  background: #eef3f9;
+  background: #f4f6f8;
 }
 
 .container {
-  max-width: 750px;
+  max-width: 600px;
   margin: auto;
   padding: 10px;
 }
@@ -14,45 +14,42 @@ body {
   height: 70vh;
   overflow-y: auto;
   background: white;
-  padding: 15px;
-  border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  padding: 10px;
+  border-radius: 10px;
 }
 
 .msg {
   margin: 10px 0;
-  padding: 12px;
-  border-radius: 12px;
-  white-space: pre-wrap;
 }
 
-.user {
-  background: #3b82f6;
-  color: white;
-  margin-left: auto;
-}
-
-.ai {
-  background: #f3f4f6;
-}
+.user { text-align: right; color: blue; }
+.ai { text-align: left; color: green; }
 
 .input-box {
   display: flex;
-  gap: 8px;
   margin-top: 10px;
 }
 
-input {
-  flex: 1;
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
+input { flex: 1; padding: 10px; }
+button { padding: 10px; }
+
+#loading {
+  display: none;
+  text-align: center;
+  color: gray;
 }
 
-button {
-  padding: 12px;
-  border: none;
-  background: #3b82f6;
-  color: white;
-  border-radius: 10px;
+#modal {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-box {
+  background: white;
+  padding: 20px;
 }
