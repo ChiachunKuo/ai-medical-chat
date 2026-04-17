@@ -1,70 +1,63 @@
-/* 🌐 全頁醫療背景 */
+/* 🌐 背景 */
 body {
   margin: 0;
-  font-family: "Segoe UI", Arial;
+  font-family: Arial;
 
   background: url("https://images.unsplash.com/photo-1579684385127-1ef15d508118")
     no-repeat center center fixed;
   background-size: cover;
 }
 
-/* 🔥 白色遮罩（超重要） */
+/* 🔥 遮罩（不擋點擊） */
 body::before {
   content: "";
   position: fixed;
-  top: 0;
-  left: 0;
   width: 100%;
   height: 100%;
-
-  background: rgba(255, 255, 255, 0.88); /* 👉 調這個透明度 */
-  z-index: -1;
+  background: rgba(255,255,255,0.85);
+  top: 0;
+  left: 0;
+  z-index: 0; /* ❗ 不要負數 */
+  pointer-events: none; /* 🔥 關鍵：不擋點擊 */
 }
 
-/* 📦 主容器 */
+/* 主容器 */
 .container {
+  position: relative;
+  z-index: 1;
   max-width: 750px;
   margin: auto;
-  padding: 15px;
+  padding: 10px;
 }
 
-/* 💬 聊天框（玻璃感） */
+/* 聊天框 */
 #chat {
   height: 70vh;
   overflow-y: auto;
-
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(8px);
-
+  background: rgba(255,255,255,0.9);
   padding: 15px;
   border-radius: 16px;
-
-  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
 }
 
-/* 💬 訊息氣泡 */
+/* 訊息 */
 .msg {
   margin: 10px 0;
   padding: 12px;
   border-radius: 12px;
-  max-width: 80%;
   white-space: pre-wrap;
 }
 
-/* 👤 使用者 */
 .user {
   background: #3b82f6;
   color: white;
   margin-left: auto;
 }
 
-/* 🤖 AI */
 .ai {
-  background: #e8f0fe;
-  color: #333;
+  background: #f3f4f6;
 }
 
-/* ✍️ 輸入區 */
+/* input */
 .input-box {
   display: flex;
   gap: 8px;
@@ -74,34 +67,32 @@ body::before {
 input {
   flex: 1;
   padding: 12px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
 }
 
-/* 🔘 按鈕 */
 button {
   padding: 12px;
   border: none;
   background: #3b82f6;
   color: white;
-  border-radius: 10px;
+  border-radius: 8px;
   cursor: pointer;
 }
 
-button:hover {
-  background: #2563eb;
-}
-
-/* 🔐 Modal（切結書） */
+/* 🔐 Modal（最上層） */
 #modal {
   position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
+
   background: rgba(0,0,0,0.6);
 
   display: flex;
   justify-content: center;
   align-items: center;
+
+  z-index: 9999; /* 🔥 關鍵 */
 }
 
 .modal-box {
