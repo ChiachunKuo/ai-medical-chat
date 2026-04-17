@@ -36,14 +36,6 @@ window.send = async function () {
 
     addMsg(data.reply, "ai");
 
-    // 📍 醫院引導
-    const link = document.createElement("a");
-    link.href = "https://www.google.com/maps/search/hospital+near+me";
-    link.target = "_blank";
-    link.innerText = "📍 查看附近醫院";
-
-    document.getElementById("chat").appendChild(link);
-
   } catch (err) {
     addMsg("系統錯誤，請稍後再試", "ai");
   }
