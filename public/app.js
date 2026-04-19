@@ -1,107 +1,117 @@
-window.onload=()=>{
+window.onload = () => {
   initParticles();
   loadGames();
   initVoice();
 };
 
-const chat=document.getElementById("chat");
+const chat = document.getElementById("chat");
 
 // =======================
-// 打字機 + 自動滾動
+// 打字機
 // =======================
 function typeAI(text){
-  const d=document.createElement("div");
-  d.className="card";
+  const d = document.createElement("div");
+  d.className = "card";
   chat.appendChild(d);
 
   let i=0;
   function t(){
     if(i<text.length){
-      d.innerText+=text[i++];
-      chat.scrollTop=chat.scrollHeight;
-      setTimeout(t,10);
+      d.innerHTML += text[i++];
+      chat.scrollTop = chat.scrollHeight;
+      setTimeout(t, 8);
     }
   }
   t();
 }
 
 // =======================
-// 語音輸入
-// =======================
-function initVoice(){
-  if(!('webkitSpeechRecognition' in window)) return;
-
-  const rec=new webkitSpeechRecognition();
-  rec.lang="zh-TW";
-
-  window.startVoice=()=>{
-    rec.start();
-  };
-
-  rec.onresult=(e)=>{
-    document.getElementById("input").value=e.results[0][0].transcript;
-  };
-}
-
-// =======================
-// Steam V10
+// Steam（🔥修正版）
 // =======================
 async function getSteam(game){
 
-  const s=await fetch(`/steam/search?game=${game}`);
-  const g=await s.json();
-  if(!g){typeAI("找不到Steam");return;}
+  const s = await fetch(`/steam/search?game=${game}`);
+  const g = await s.json();
 
-  const id=g.id;
+  if(!g){
+    typeAI("❌ 找不到遊戲");
+    return;
+  }
 
-  const det=await fetch(`/steam/details?appid=${id}`);
-  const d=await det.json();
+  const id = g.id;
+
+  // 詳細資料
+  const det = await fetch(`/steam/details?appid=${id}`);
+  const d = await det.json();
 
   typeAI(`🎮 ${d.name}`);
-  typeAI(`💰 ${d.is_free?"Free":d.price_overview?.final_formatted}`);
-  typeAI(`📅 ${d.release_date.date}`);
+
+  // ✅ 價格修正
+  if(d.is_free){
+    typeAI(`💰 免費遊戲`);
+  }else{
+    typeAI(`💰 ${d.price_overview?.final_formatted || "無價格資料"}`);
+  }
+
+  typeAI(`📅 ${d.release_date?.date || "未知"}`);
 
   // 圖片
-  const img=document.createElement("img");
-  img.src=d.header_image;
-  img.style.width="100%";
+  const img = document.createElement("img");
+  img.src = d.header_image;
+  img.style.width = "100%";
+  img.style.borderRadius = "10px";
+  img.style.margin = "10px 0";
   chat.appendChild(img);
 
-  // 評論
-  const rev=await fetch(`/steam/reviews?appid=${id}`);
-  const r=await rev.json();
+  // =======================
+  // 🔥 評論（正確寫法）
+  // =======================
+  const rev = await fetch(`/steam/reviews?appid=${id}`);
+  const r = await rev.json();
 
-  let pos=0,neg=0;
-  r.reviews.forEach(x=>x.voted_up?pos++:neg++);
+  const summary = r.query_summary;
 
-  typeAI(`⭐ 👍${pos} 👎${neg}`);
+  if(summary){
+    const pos = summary.total_positive;
+    const neg = summary.total_negative;
+    const desc = summary.review_score_desc;
 
-  const texts=r.reviews.map(x=>x.review).slice(0,3);
-  typeAI(texts.join("\n\n"));
+    typeAI(`⭐ ${desc}`);
+    typeAI(`👍 ${pos} / 👎 ${neg}`);
+  }
+
+  // 留言
+  if(r.reviews){
+    const texts = r.reviews.slice(0,3).map(x=>x.review);
+    typeAI(texts.join("<br><br>"));
+  }
 }
 
 // =======================
 // send
 // =======================
-window.send=async()=>{
-  const input=document.getElementById("input");
-  const text=input.value.trim();
+window.send = async ()=>{
+  const input = document.getElementById("input");
+  const text = input.value.trim();
+
   if(!text) return;
 
-  const u=document.createElement("div");
-  u.className="user";
-  u.innerText=text;
+  const u = document.createElement("div");
+  u.className = "user";
+  u.innerText = text;
   chat.appendChild(u);
 
-  input.value="";
+  input.value = "";
 
-  const r=await fetch("/chat",{
+  typeAI("⏳ 加載中...");
+
+  const r = await fetch("/chat",{
     method:"POST",
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify({message:text})
   });
 
-  const d=await r.json();
+  const d = await r.json();
 
   typeAI("🤖 "+d.reply);
   typeAI("🎯 類型："+d.type);
@@ -110,55 +120,44 @@ window.send=async()=>{
 };
 
 // =======================
-// 粒子（滑鼠互動）
+// 粒子（🔥100%顯示版）
 // =======================
 function initParticles(){
-  const c=document.getElementById("bg");
-  const ctx=c.getContext("2d");
+  const c = document.getElementById("bg");
+  const ctx = c.getContext("2d");
 
   function resize(){
-    c.width=window.innerWidth;
-    c.height=window.innerHeight;
+    c.width = window.innerWidth;
+    c.height = window.innerHeight;
   }
   resize();
-  window.addEventListener("resize",resize);
+  window.onresize = resize;
 
-  let mouse={x:0,y:0};
+  let particles = [];
 
-  window.onmousemove=e=>{
-    mouse.x=e.x;
-    mouse.y=e.y;
-  };
-
-  const p=[];
-  for(let i=0;i<120;i++){
-    p.push({
+  for(let i=0;i<150;i++){
+    particles.push({
       x:Math.random()*c.width,
       y:Math.random()*c.height,
-      dx:(Math.random()-0.5),
-      dy:(Math.random()-0.5)
+      vx:(Math.random()-0.5)*1.5,
+      vy:(Math.random()-0.5)*1.5
     });
   }
 
   function draw(){
     ctx.clearRect(0,0,c.width,c.height);
 
-    p.forEach(a=>{
-      a.x+=a.dx;
-      a.y+=a.dy;
+    particles.forEach(p=>{
+      p.x += p.vx;
+      p.y += p.vy;
 
-      // 吸引滑鼠
-      const dx=mouse.x-a.x;
-      const dy=mouse.y-a.y;
-      const dist=Math.sqrt(dx*dx+dy*dy);
+      if(p.x<0||p.x>c.width) p.vx*=-1;
+      if(p.y<0||p.y>c.height) p.vy*=-1;
 
-      if(dist<100){
-        a.x+=dx*0.01;
-        a.y+=dy*0.01;
-      }
-
-      ctx.fillStyle="cyan";
-      ctx.fillRect(a.x,a.y,2,2);
+      ctx.fillStyle="rgba(0,255,255,0.7)";
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,2,0,Math.PI*2);
+      ctx.fill();
     });
 
     requestAnimationFrame(draw);
@@ -176,10 +175,27 @@ function loadGames(){
     const d=document.createElement("div");
     d.className="game";
     d.innerText=g;
+
     d.onclick=()=>{
       document.getElementById("input").value=g;
       send();
     };
+
     div.appendChild(d);
   });
+}
+
+// =======================
+function initVoice(){
+  if(!('webkitSpeechRecognition' in window)) return;
+
+  const rec=new webkitSpeechRecognition();
+  rec.lang="zh-TW";
+
+  window.startVoice=()=>rec.start();
+
+  rec.onresult=(e)=>{
+    document.getElementById("input").value =
+      e.results[0][0].transcript;
+  };
 }
