@@ -3,41 +3,33 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI醫療分流系統</title>
+<title>GAME GUIDE AI</title>
 <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<!-- 🔐 切結書 -->
-<div id="modal">
-  <div class="modal-box">
-    <h2>醫療使用聲明</h2>
+<!-- 🎮 粒子背景 -->
+<canvas id="bg"></canvas>
 
-    <p>
-      本系統僅供參考，無法取代醫師診斷。<br><br>
-      若為緊急狀況請立即就醫。<br><br>
-      點擊「同意」代表您了解並接受以上內容。
-    </p>
+<div class="layout">
 
-    <div class="modal-btns">
-      <button id="agreeBtn">同意並進入</button>
-      <button id="declineBtn">不同意</button>
+  <div class="chat-area">
+    <h2 class="title">🎮 GAME GUIDE AI</h2>
+
+    <div id="chat"></div>
+
+    <div class="input-box">
+      <input id="input" placeholder="輸入遊戲名稱或問題...">
+      <button onclick="send()">送出</button>
     </div>
   </div>
-</div>
 
-<div class="container">
-  <h1>AI醫療分流系統</h1>
-
-  <div id="chat"></div>
-
-  <div id="loading">AI分析中...</div>
-
-  <div class="input-box">
-    <input id="input" placeholder="請描述症狀...">
-    <button onclick="send()">送出</button>
+  <div class="side">
+    <h3>🔥 熱門遊戲</h3>
+    <div id="games"></div>
   </div>
+
 </div>
 
 <script src="app.js"></script>
