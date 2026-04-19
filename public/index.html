@@ -1,28 +1,24 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GAME GUIDE AI</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>GAME GUIDE AI</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<!-- 🎮 粒子背景 -->
+<!-- 粒子 -->
 <canvas id="bg"></canvas>
 
 <div class="layout">
 
   <div class="chat-area">
-    <h2 class="title">🎮 GAME GUIDE AI</h2>
-
     <div id="chat"></div>
 
-    <div class="input-box">
-      <input id="input" placeholder="輸入遊戲名稱或問題...">
-      <button onclick="send()">送出</button>
-    </div>
+    <input id="input" placeholder="輸入遊戲名稱...">
+    <button onclick="send()">送出</button>
+    <button onclick="startVoice()">🎤</button>
   </div>
 
   <div class="side">
