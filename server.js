@@ -1,7 +1,3 @@
-// =======================
-// 🎮 GAME GUIDE AI V9 SERVER
-// =======================
-
 import express from "express";
 import fetch from "node-fetch";
 import cors from "cors";
@@ -12,69 +8,61 @@ app.use(express.json());
 app.use(express.static("public"));
 
 // =======================
-// 🤖 AI（保留原文）
+// 🤖 AI分類（簡易）
 // =======================
-app.post("/chat", async (req, res) => {
+function classify(game){
+  const g = game.toLowerCase();
+
+  if(g.includes("elden")) return "RPG";
+  if(g.includes("cod") || g.includes("valorant")) return "FPS";
+  if(g.includes("gta")) return "Open World";
+  return "Game";
+}
+
+// =======================
+app.post("/chat", async (req, res)=>{
   const msg = req.body.message;
-  try {
-    res.json({
-      reply: `Guide for "${msg}": Focus on core mechanics, upgrade early, and learn enemy patterns.`
-    });
-  } catch {
-    res.json({ reply: "error" });
-  }
+
+  res.json({
+    reply: `Guide: ${msg}\nFocus on core gameplay, upgrade early, and adapt strategy.`,
+    type: classify(msg)
+  });
 });
 
 // =======================
-// 🔍 Steam 搜尋
+// Steam 搜尋
 // =======================
-app.get("/steam/search", async (req, res) => {
-  const game = req.query.game;
+app.get("/steam/search", async (req,res)=>{
+  const game=req.query.game;
 
-  try {
-    const r = await fetch(
-      `https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(game)}&l=english`
-    );
-    const d = await r.json();
-    res.json(d.items?.[0] || null);
-  } catch {
-    res.json(null);
-  }
+  const r=await fetch(`https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(game)}`);
+  const d=await r.json();
+
+  res.json(d.items?.[0]||null);
 });
 
 // =======================
-// ⭐ 評論 + 評分
+// Steam 詳細
 // =======================
-app.get("/steam/reviews", async (req, res) => {
-  const appid = req.query.appid;
+app.get("/steam/details", async (req,res)=>{
+  const id=req.query.appid;
 
-  try {
-    const r = await fetch(
-      `https://store.steampowered.com/appreviews/${appid}?json=1&num_per_page=5`
-    );
-    const d = await r.json();
-    res.json(d);
-  } catch {
-    res.json(null);
-  }
+  const r=await fetch(`https://store.steampowered.com/api/appdetails?appids=${id}`);
+  const d=await r.json();
+
+  res.json(d[id].data);
 });
 
 // =======================
-// 🎮 商店資訊（價格、圖）
+// Steam 評論
 // =======================
-app.get("/steam/details", async (req, res) => {
-  const appid = req.query.appid;
+app.get("/steam/reviews", async (req,res)=>{
+  const id=req.query.appid;
 
-  try {
-    const r = await fetch(
-      `https://store.steampowered.com/api/appdetails?appids=${appid}&l=english`
-    );
-    const d = await r.json();
-    res.json(d[appid].data);
-  } catch {
-    res.json(null);
-  }
+  const r=await fetch(`https://store.steampowered.com/appreviews/${id}?json=1&num_per_page=6`);
+  const d=await r.json();
+
+  res.json(d);
 });
 
-// =======================
-app.listen(3000, () => console.log("V9 Server running"));
+app.listen(3000, ()=>console.log("V10 running"));
