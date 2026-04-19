@@ -1,53 +1,38 @@
 body {
   margin: 0;
-  font-family: Arial;
+  background: black;
   color: white;
   overflow: hidden;
-  background: black;
 }
 
-/* 🎮 粒子層（修復核心） */
+/* 🎮 粒子層（最重要） */
 #bg {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: -999;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
   pointer-events: none;
 }
 
-/* layout */
+/* UI */
 .layout {
   display: flex;
   height: 100vh;
 }
 
-/* 左 */
 .chat-area {
   flex: 2;
   padding: 15px;
 }
 
-/* 右 */
 .side {
   flex: 1;
   padding: 15px;
   background: rgba(0,0,0,0.4);
-  border-left: 1px solid rgba(0,255,255,0.2);
 }
 
-/* title animation */
-.title {
-  animation: glow 2s infinite alternate;
-}
-
-@keyframes glow {
-  from { text-shadow: 0 0 5px red; }
-  to { text-shadow: 0 0 20px cyan; }
-}
-
-/* chat */
 #chat {
   height: 60vh;
   overflow-y: auto;
@@ -56,18 +41,8 @@ body {
   border-radius: 10px;
 }
 
-/* ✨ message animation */
-.user, .card, .yt {
-  animation: fadeIn 0.4s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
 .user {
-  background: #dc2626;
+  background: red;
   margin: 5px;
   padding: 8px;
   border-radius: 8px;
@@ -75,25 +50,19 @@ body {
 }
 
 .card {
-  background: rgba(20,20,20,0.85);
-  margin: 6px;
-  padding: 10px;
-  border-left: 3px solid red;
+  background: rgba(20,20,20,0.8);
+  margin: 5px;
+  padding: 8px;
 }
 
-/* YouTube */
 .yt {
-  background: rgba(0,150,255,0.15);
-  border-left: 3px solid #00c8ff;
-  padding: 10px;
-  margin: 6px;
-  color: #7dd3fc;
+  background: rgba(0,150,255,0.2);
+  padding: 8px;
+  margin: 5px;
 }
 
-/* input */
 .input-box {
   display: flex;
-  margin-top: 10px;
 }
 
 input {
@@ -102,38 +71,5 @@ input {
 }
 
 button {
-  background: red;
-  color: white;
-  border: none;
   padding: 10px;
-  transition: 0.2s;
-}
-
-button:hover {
-  box-shadow: 0 0 10px red;
-  transform: scale(1.05);
-}
-
-/* game card */
-.game {
-  margin-bottom: 10px;
-  cursor: pointer;
-  border-radius: 10px;
-  overflow: hidden;
-  transition: 0.2s;
-}
-
-.game:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 15px cyan;
-}
-
-.game img {
-  width: 100%;
-  height: 120px;
-  object-fit: cover;
-}
-
-.game div {
-  padding: 5px;
 }
