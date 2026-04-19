@@ -1,9 +1,75 @@
+// =======================
+// 初始化確保 DOM ready
+// =======================
+window.onload = () => {
+
+  initParticles();
+  loadGames();
+
+};
+
+// =======================
+// 🎆 粒子（完全修復版）
+// =======================
+function initParticles() {
+
+  const canvas = document.getElementById("bg");
+  if (!canvas) {
+    console.error("canvas not found");
+    return;
+  }
+
+  const ctx = canvas.getContext("2d");
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+
+  resize();
+  window.addEventListener("resize", resize);
+
+  const particles = [];
+
+  for (let i = 0; i < 120; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      dx: (Math.random() - 0.5) * 1,
+      dy: (Math.random() - 0.5) * 1,
+      r: Math.random() * 2 + 1
+    });
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (let p of particles) {
+
+      p.x += p.dx;
+      p.y += p.dy;
+
+      if (p.x < 0 || p.x > canvas.width) p.dx *= -1;
+      if (p.y < 0 || p.y > canvas.height) p.dy *= -1;
+
+      ctx.fillStyle = "rgba(0,255,255,0.8)";
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+}
+
+// =======================
+// UI
+// =======================
 const chat = document.getElementById("chat");
 const gamesDiv = document.getElementById("games");
 
-// =======================
-// 👤 user
-// =======================
 function addUser(t) {
   const d = document.createElement("div");
   d.className = "user";
@@ -11,9 +77,6 @@ function addUser(t) {
   chat.appendChild(d);
 }
 
-// =======================
-// 🤖 AI（不強制翻譯）
-// =======================
 function addAI(t) {
   const d = document.createElement("div");
   d.className = "card";
@@ -21,23 +84,20 @@ function addAI(t) {
   chat.appendChild(d);
 }
 
-// =======================
-// 🎥 YouTube
-// =======================
 function addYT(game) {
-  const d = document.createElement("a");
-  d.className = "yt";
-  d.href = `https://www.youtube.com/results?search_query=${encodeURIComponent(game + "攻略")}`;
-  d.target = "_blank";
-  d.innerText = `🎥 ${game} YouTube攻略`;
-  chat.appendChild(d);
+  const a = document.createElement("a");
+  a.className = "yt";
+  a.href = `https://www.youtube.com/results?search_query=${encodeURIComponent(game + "攻略")}`;
+  a.target = "_blank";
+  a.innerText = "🎥 YouTube攻略";
+  chat.appendChild(a);
 }
 
 // =======================
-// 🎯 遊戲辨識
+// 🎯 遊戲名稱
 // =======================
 function extractGame(text) {
-  const list = ["Elden Ring","Cyberpunk 2077","GTA V","League of Legends","Minecraft","原神"];
+  const list = ["Elden Ring","Cyberpunk 2077","GTA V","Minecraft","原神"];
   for (let g of list) {
     if (text.toLowerCase().includes(g.toLowerCase())) return g;
   }
@@ -49,58 +109,46 @@ function extractGame(text) {
 // =======================
 async function getWiki(game) {
   try {
-    const res = await fetch(
-      `https://zh.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(game)}`
-    );
+    const res = await fetch(`https://zh.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(game)}`);
     const data = await res.json();
 
     if (data.extract) {
-      addAI("📚 Wiki：" + data.extract);
+      addAI("📚 Wiki: " + data.extract);
     }
   } catch {}
 }
 
 // =======================
-// 🗣️ 評論
+// ⭐ Steam 真實評論（重點）
 // =======================
-function reviews(game) {
-  const map = {
-    "Elden Ring": ["高難度","自由探索","史詩體驗"],
-    "Cyberpunk 2077": ["劇情強","畫面優","更新改善"],
-    "GTA V": ["自由度高","耐玩","任務多"],
-    "default": ["玩家評價良好","可玩性高","畫面佳"]
-  };
+async function getSteamReviews(game) {
 
-  const r = map[game] || map.default;
-  addAI("🗣️ 玩家評論：\n- " + r.join("\n- "));
-}
+  try {
 
-// =======================
-// 🎮 熱門遊戲
-// =======================
-function loadGames() {
-  const games = [
-    {name:"Elden Ring",img:"https://cdn.cloudflare.steamstatic.com/steam/apps/1245620/header.jpg"},
-    {name:"Cyberpunk 2077",img:"https://cdn.cloudflare.steamstatic.com/steam/apps/1091500/header.jpg"},
-    {name:"GTA V",img:"https://upload.wikimedia.org/wikipedia/en/a/a5/Grand_Theft_Auto_V.png"}
-  ];
+    // ⚠️ Steam沒有官方公開評論API
+    // 這裡用 unofficial endpoint
+    const url = `https://store.steampowered.com/appreviews/1245620?json=1`;
 
-  games.forEach(g=>{
-    const d=document.createElement("div");
-    d.className="game";
-    d.innerHTML=`<img src="${g.img}"><div>${g.name}</div>`;
-    d.onclick=()=>{
-      document.getElementById("input").value=g.name+" 攻略";
-      send();
-    };
-    gamesDiv.appendChild(d);
-  });
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (data.reviews && data.reviews.length > 0) {
+
+      const reviews = data.reviews.slice(0, 3).map(r => r.review);
+
+      addAI("⭐ Steam玩家評論：\n- " + reviews.join("\n- "));
+    }
+
+  } catch {
+    addAI("⭐ 無法取得Steam評論");
+  }
 }
 
 // =======================
 // 🚀 send
 // =======================
 window.send = async function () {
+
   const input = document.getElementById("input");
   const text = input.value.trim();
   if (!text) return;
@@ -111,6 +159,7 @@ window.send = async function () {
   const game = extractGame(text);
 
   try {
+
     const res = await fetch("/chat", {
       method:"POST",
       headers:{"Content-Type":"application/json"},
@@ -119,11 +168,10 @@ window.send = async function () {
 
     const data = await res.json();
 
-    // ⚠️ 不強制翻譯（保留原文）
     addAI("🤖 " + data.reply);
 
     await getWiki(game);
-    reviews(game);
+    await getSteamReviews(game);
     addYT(game);
 
   } catch {
@@ -132,48 +180,25 @@ window.send = async function () {
 };
 
 // =======================
-// 🎆 粒子（修復版100%可動）
+// 🎮 熱門遊戲
 // =======================
-const canvas = document.getElementById("bg");
-const ctx = canvas.getContext("2d");
+function loadGames() {
 
-function resize(){
-  canvas.width=window.innerWidth;
-  canvas.height=window.innerHeight;
-}
-resize();
-window.addEventListener("resize",resize);
+  const games = [
+    {name:"Elden Ring",img:"https://cdn.cloudflare.steamstatic.com/steam/apps/1245620/header.jpg"},
+    {name:"Cyberpunk 2077",img:"https://cdn.cloudflare.steamstatic.com/steam/apps/1091500/header.jpg"}
+  ];
 
-let p=[];
-for(let i=0;i<120;i++){
-  p.push({
-    x:Math.random()*canvas.width,
-    y:Math.random()*canvas.height,
-    r:Math.random()*2,
-    dx:(Math.random()-0.5)*0.8,
-    dy:(Math.random()-0.5)*0.8
+  games.forEach(g => {
+
+    const d = document.createElement("div");
+    d.innerHTML = `<img src="${g.img}" style="width:100%"><div>${g.name}</div>`;
+
+    d.onclick = () => {
+      document.getElementById("input").value = g.name;
+      send();
+    };
+
+    gamesDiv.appendChild(d);
   });
 }
-
-function animate(){
-  ctx.fillStyle="rgba(0,0,0,0.35)";
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-
-  for(let i of p){
-    i.x+=i.dx;
-    i.y+=i.dy;
-
-    if(i.x<0||i.x>canvas.width) i.dx*=-1;
-    if(i.y<0||i.y>canvas.height) i.dy*=-1;
-
-    ctx.fillStyle="rgba(0,255,255,0.7)";
-    ctx.beginPath();
-    ctx.arc(i.x,i.y,i.r,0,Math.PI*2);
-    ctx.fill();
-  }
-
-  requestAnimationFrame(animate);
-}
-animate();
-
-loadGames();
