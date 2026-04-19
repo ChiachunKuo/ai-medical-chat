@@ -1,139 +1,118 @@
-window.onload = () => {
+window.onload=()=>{
   initParticles();
   loadGames();
+  initVoice();
 };
 
-const chat = document.getElementById("chat");
+const chat=document.getElementById("chat");
 
 // =======================
-// UI
+// 打字機 + 自動滾動
 // =======================
-function addUser(t){
-  const d=document.createElement("div");
-  d.className="user";
-  d.innerText=t;
-  chat.appendChild(d);
-}
-
-// 🧠 打字機效果
 function typeAI(text){
   const d=document.createElement("div");
-  d.className="card typing";
+  d.className="card";
   chat.appendChild(d);
 
   let i=0;
-  function typing(){
+  function t(){
     if(i<text.length){
-      d.innerText += text[i++];
-      setTimeout(typing,15);
-    }else{
-      d.classList.remove("typing");
+      d.innerText+=text[i++];
+      chat.scrollTop=chat.scrollHeight;
+      setTimeout(t,10);
     }
   }
-  typing();
+  t();
 }
 
 // =======================
-// 🎥 YouTube
+// 語音輸入
 // =======================
-function addYT(game){
-  const a=document.createElement("a");
-  a.className="yt";
-  a.href=`https://www.youtube.com/results?search_query=${encodeURIComponent(game+" gameplay")}`;
-  a.target="_blank";
-  a.innerText="🎥 Gameplay";
-  chat.appendChild(a);
+function initVoice(){
+  if(!('webkitSpeechRecognition' in window)) return;
+
+  const rec=new webkitSpeechRecognition();
+  rec.lang="zh-TW";
+
+  window.startVoice=()=>{
+    rec.start();
+  };
+
+  rec.onresult=(e)=>{
+    document.getElementById("input").value=e.results[0][0].transcript;
+  };
 }
 
 // =======================
-// 📚 Wiki
-// =======================
-async function getWiki(game){
-  try{
-    const r=await fetch(`https://zh.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(game)}`);
-    const d=await r.json();
-    if(d.extract) typeAI("📚 "+d.extract);
-  }catch{}
-}
-
-// =======================
-// 🔥 Steam V9（完整）
+// Steam V10
 // =======================
 async function getSteam(game){
 
-  try{
-    const s=await fetch(`/steam/search?game=${encodeURIComponent(game)}`);
-    const g=await s.json();
-    if(!g){ typeAI("❌ Steam找不到"); return;}
+  const s=await fetch(`/steam/search?game=${game}`);
+  const g=await s.json();
+  if(!g){typeAI("找不到Steam");return;}
 
-    const appid=g.id;
+  const id=g.id;
 
-    // details
-    const det=await fetch(`/steam/details?appid=${appid}`);
-    const data=await det.json();
+  const det=await fetch(`/steam/details?appid=${id}`);
+  const d=await det.json();
 
-    typeAI(`🎮 ${data.name}`);
-    typeAI(`💰 ${data.is_free ? "Free" : data.price_overview?.final_formatted || "N/A"}`);
+  typeAI(`🎮 ${d.name}`);
+  typeAI(`💰 ${d.is_free?"Free":d.price_overview?.final_formatted}`);
+  typeAI(`📅 ${d.release_date.date}`);
 
-    // 評論
-    const rev=await fetch(`/steam/reviews?appid=${appid}`);
-    const rdata=await rev.json();
+  // 圖片
+  const img=document.createElement("img");
+  img.src=d.header_image;
+  img.style.width="100%";
+  chat.appendChild(img);
 
-    const reviews=rdata.reviews.map(r=>r.review);
+  // 評論
+  const rev=await fetch(`/steam/reviews?appid=${id}`);
+  const r=await rev.json();
 
-    // ⭐ 情緒分析（簡單版）
-    let pos=0,neg=0;
-    rdata.reviews.forEach(r=>{
-      if(r.voted_up) pos++;
-      else neg++;
-    });
+  let pos=0,neg=0;
+  r.reviews.forEach(x=>x.voted_up?pos++:neg++);
 
-    typeAI(`⭐ 👍${pos} / 👎${neg}`);
+  typeAI(`⭐ 👍${pos} 👎${neg}`);
 
-    typeAI("🗣️ "+reviews.join("\n\n"));
-
-  }catch{
-    typeAI("Steam error");
-  }
+  const texts=r.reviews.map(x=>x.review).slice(0,3);
+  typeAI(texts.join("\n\n"));
 }
 
 // =======================
-// 🚀 send
+// send
 // =======================
-window.send = async function(){
-
+window.send=async()=>{
   const input=document.getElementById("input");
   const text=input.value.trim();
   if(!text) return;
 
-  addUser(text);
+  const u=document.createElement("div");
+  u.className="user";
+  u.innerText=text;
+  chat.appendChild(u);
+
   input.value="";
 
-  try{
-    const r=await fetch("/chat",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({message:text})
-    });
+  const r=await fetch("/chat",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({message:text})
+  });
 
-    const d=await r.json();
+  const d=await r.json();
 
-    typeAI("🤖 "+d.reply);
+  typeAI("🤖 "+d.reply);
+  typeAI("🎯 類型："+d.type);
 
-    await getWiki(text);
-    await getSteam(text);
-    addYT(text);
-
-  }catch{
-    typeAI("error");
-  }
+  await getSteam(text);
 };
 
 // =======================
-// 🎆 粒子（連線版）
+// 粒子（滑鼠互動）
 // =======================
 function initParticles(){
-
   const c=document.getElementById("bg");
   const ctx=c.getContext("2d");
 
@@ -144,8 +123,15 @@ function initParticles(){
   resize();
   window.addEventListener("resize",resize);
 
+  let mouse={x:0,y:0};
+
+  window.onmousemove=e=>{
+    mouse.x=e.x;
+    mouse.y=e.y;
+  };
+
   const p=[];
-  for(let i=0;i<100;i++){
+  for(let i=0;i<120;i++){
     p.push({
       x:Math.random()*c.width,
       y:Math.random()*c.height,
@@ -157,31 +143,23 @@ function initParticles(){
   function draw(){
     ctx.clearRect(0,0,c.width,c.height);
 
-    // 點
     p.forEach(a=>{
       a.x+=a.dx;
       a.y+=a.dy;
 
+      // 吸引滑鼠
+      const dx=mouse.x-a.x;
+      const dy=mouse.y-a.y;
+      const dist=Math.sqrt(dx*dx+dy*dy);
+
+      if(dist<100){
+        a.x+=dx*0.01;
+        a.y+=dy*0.01;
+      }
+
       ctx.fillStyle="cyan";
       ctx.fillRect(a.x,a.y,2,2);
     });
-
-    // 線（距離連線）
-    for(let i=0;i<p.length;i++){
-      for(let j=i+1;j<p.length;j++){
-        const dx=p[i].x-p[j].x;
-        const dy=p[i].y-p[j].y;
-        const dist=Math.sqrt(dx*dx+dy*dy);
-
-        if(dist<100){
-          ctx.strokeStyle="rgba(0,255,255,0.2)";
-          ctx.beginPath();
-          ctx.moveTo(p[i].x,p[i].y);
-          ctx.lineTo(p[j].x,p[j].y);
-          ctx.stroke();
-        }
-      }
-    }
 
     requestAnimationFrame(draw);
   }
@@ -189,8 +167,6 @@ function initParticles(){
   draw();
 }
 
-// =======================
-// 🎮 games
 // =======================
 function loadGames(){
   const list=["Elden Ring","Cyberpunk 2077","GTA V"];
