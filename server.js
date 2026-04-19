@@ -1,117 +1,98 @@
-import express from "express";
-import dotenv from "dotenv";
+// =======================
+// 🎮 GAME GUIDE AI SERVER (Steam版)
+// =======================
 
-dotenv.config();
+import express from "express";
+import fetch from "node-fetch";
+import cors from "cors";
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 app.use(express.static("public"));
 
-const PORT = process.env.PORT || 3000;
-
-// ✅ API KEY
-const GROQ_API_KEY = process.env.GROQ_API_KEY;
-
-if (!GROQ_API_KEY) {
-  console.error("❌ GROQ_API_KEY 未設定");
-}
-
-// 🧠 醫療 prompt
-function buildPrompt(input) {
-  return `
-你是一個醫療分流AI。
-
-請依照以下格式輸出：
-
-【是否需要就醫】
-可觀察 / 需要 / 緊急
-
-【風險等級】
-低 / 中 / 高 / 危急
-
-【原因判斷】
-簡單說明
-
-【自主處置】
-如果是輕微症狀，給2~3個建議（例如休息、多喝水）
-
-【建議行動】
-下一步建議
-
-【建議科別】
-若需要就醫才填寫
-
-使用者症狀：
-${input}
-`;
-}
-
-// 🔥 Groq API（最新穩定版）
-async function askAI(prompt) {
-  try {
-    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${GROQ_API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        // ✅ 🔥 最新可用模型（重點修正）
-        model: "llama-3.1-8b-instant",
-
-        messages: [
-          {
-            role: "system",
-            content: "你是專業醫療問診AI，只能用問診方式回答，不可直接診斷"
-          },
-          {
-            role: "user",
-            content: prompt
-          }
-        ],
-
-        temperature: 0.7,
-        max_tokens: 300
-      })
-    });
-
-    const data = await res.json();
-
-    console.log("GROQ RESPONSE:", JSON.stringify(data));
-
-    // ❗ API error handling
-    if (!res.ok) {
-      throw new Error(data.error?.message || "Groq API error");
-    }
-
-    return data.choices?.[0]?.message?.content || "無回應";
-
-  } catch (err) {
-    console.error("❌ GROQ ERROR:", err.message);
-
-    return "系統暫時忙碌，請稍後再試";
-  }
-}
-
-// 💬 API
+// =======================
+// 🤖 AI（你原本的）
+// =======================
 app.post("/chat", async (req, res) => {
+
+  const msg = req.body.message;
+
   try {
-    const userMessage = req.body.message;
-
-    if (!userMessage) {
-      return res.json({ reply: "請輸入症狀" });
-    }
-
-    const reply = await askAI(buildPrompt(userMessage));
-
+    const reply = `Here is a guide for: ${msg}`;
     res.json({ reply });
 
-  } catch (err) {
-    console.error(err);
-    res.json({ reply: "系統錯誤，請稍後再試" });
+  } catch {
+    res.json({ reply: "error" });
   }
 });
 
-app.listen(PORT, () => {
-  console.log("🚀 Server running on port", PORT);
+// =======================
+// 🔍 Steam 搜尋 AppID
+// =======================
+app.get("/steam/search", async (req, res) => {
+
+  const game = req.query.game;
+
+  try {
+
+    const url = `https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(game)}&l=english`;
+
+    const r = await fetch(url);
+    const data = await r.json();
+
+    if (data.items && data.items.length > 0) {
+      res.json(data.items[0]); // 第一筆最相關
+    } else {
+      res.json(null);
+    }
+
+  } catch {
+    res.json(null);
+  }
 });
+
+// =======================
+// ⭐ Steam 評論
+// =======================
+app.get("/steam/reviews", async (req, res) => {
+
+  const appid = req.query.appid;
+
+  try {
+
+    const url = `https://store.steampowered.com/appreviews/${appid}?json=1&num_per_page=3`;
+
+    const r = await fetch(url);
+    const data = await r.json();
+
+    res.json(data);
+
+  } catch {
+    res.json(null);
+  }
+});
+
+// =======================
+// ⭐ Steam 評分（好評率）
+// =======================
+app.get("/steam/summary", async (req, res) => {
+
+  const appid = req.query.appid;
+
+  try {
+
+    const url = `https://store.steampowered.com/appreviews/${appid}?json=1&num_per_page=0`;
+
+    const r = await fetch(url);
+    const data = await r.json();
+
+    res.json(data.query_summary);
+
+  } catch {
+    res.json(null);
+  }
+});
+
+// =======================
+app.listen(3000, () => console.log("Server running"));
