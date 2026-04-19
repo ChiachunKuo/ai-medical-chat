@@ -1,13 +1,9 @@
-// =======================
-// 初始化
-// =======================
 window.onload = () => {
   initParticles();
   loadGames();
 };
 
 const chat = document.getElementById("chat");
-const gamesDiv = document.getElementById("games");
 
 // =======================
 // UI
@@ -19,27 +15,34 @@ function addUser(t){
   chat.appendChild(d);
 }
 
-function addAI(t){
+// 🧠 打字機效果
+function typeAI(text){
   const d=document.createElement("div");
-  d.className="card";
-  d.innerText=t;
+  d.className="card typing";
   chat.appendChild(d);
+
+  let i=0;
+  function typing(){
+    if(i<text.length){
+      d.innerText += text[i++];
+      setTimeout(typing,15);
+    }else{
+      d.classList.remove("typing");
+    }
+  }
+  typing();
 }
 
+// =======================
+// 🎥 YouTube
+// =======================
 function addYT(game){
   const a=document.createElement("a");
   a.className="yt";
-  a.href=`https://www.youtube.com/results?search_query=${encodeURIComponent(game+"攻略")}`;
+  a.href=`https://www.youtube.com/results?search_query=${encodeURIComponent(game+" gameplay")}`;
   a.target="_blank";
-  a.innerText="🎥 YouTube攻略";
+  a.innerText="🎥 Gameplay";
   chat.appendChild(a);
-}
-
-// =======================
-// 🎯 遊戲名稱
-// =======================
-function extractGame(text){
-  return text;
 }
 
 // =======================
@@ -49,49 +52,48 @@ async function getWiki(game){
   try{
     const r=await fetch(`https://zh.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(game)}`);
     const d=await r.json();
-    if(d.extract) addAI("📚 "+d.extract);
+    if(d.extract) typeAI("📚 "+d.extract);
   }catch{}
 }
 
 // =======================
-// 🔥 Steam完整流程
+// 🔥 Steam V9（完整）
 // =======================
-async function getSteamData(game){
+async function getSteam(game){
 
   try{
+    const s=await fetch(`/steam/search?game=${encodeURIComponent(game)}`);
+    const g=await s.json();
+    if(!g){ typeAI("❌ Steam找不到"); return;}
 
-    // ① 搜尋 appId
-    const search = await fetch(`/steam/search?game=${encodeURIComponent(game)}`);
-    const gameData = await search.json();
+    const appid=g.id;
 
-    if(!gameData){
-      addAI("⚠️ Steam找不到此遊戲");
-      return;
-    }
+    // details
+    const det=await fetch(`/steam/details?appid=${appid}`);
+    const data=await det.json();
 
-    const appid = gameData.id;
+    typeAI(`🎮 ${data.name}`);
+    typeAI(`💰 ${data.is_free ? "Free" : data.price_overview?.final_formatted || "N/A"}`);
 
-    addAI(`🎮 Steam：${gameData.name}`);
+    // 評論
+    const rev=await fetch(`/steam/reviews?appid=${appid}`);
+    const rdata=await rev.json();
 
-    // ② 評分
-    const summaryRes = await fetch(`/steam/summary?appid=${appid}`);
-    const summary = await summaryRes.json();
+    const reviews=rdata.reviews.map(r=>r.review);
 
-    if(summary){
-      addAI(`⭐ 好評率：${summary.review_score_desc} (${summary.total_reviews} reviews)`);
-    }
+    // ⭐ 情緒分析（簡單版）
+    let pos=0,neg=0;
+    rdata.reviews.forEach(r=>{
+      if(r.voted_up) pos++;
+      else neg++;
+    });
 
-    // ③ 評論
-    const reviewRes = await fetch(`/steam/reviews?appid=${appid}`);
-    const reviewData = await reviewRes.json();
+    typeAI(`⭐ 👍${pos} / 👎${neg}`);
 
-    if(reviewData && reviewData.reviews){
-      const texts = reviewData.reviews.map(r=>r.review);
-      addAI("🗣️ Steam玩家評論：\n- "+texts.join("\n- "));
-    }
+    typeAI("🗣️ "+reviews.join("\n\n"));
 
   }catch{
-    addAI("⚠️ Steam載入失敗");
+    typeAI("Steam error");
   }
 }
 
@@ -108,7 +110,6 @@ window.send = async function(){
   input.value="";
 
   try{
-
     const r=await fetch("/chat",{
       method:"POST",
       headers:{"Content-Type":"application/json"},
@@ -117,72 +118,83 @@ window.send = async function(){
 
     const d=await r.json();
 
-    // ❗ 保留原文（不強制翻譯）
-    addAI("🤖 "+d.reply);
+    typeAI("🤖 "+d.reply);
 
     await getWiki(text);
-    await getSteamData(text);
+    await getSteam(text);
     addYT(text);
 
   }catch{
-    addAI("⚠️ error");
+    typeAI("error");
   }
 };
 
 // =======================
-// 🎆 粒子（保證顯示）
+// 🎆 粒子（連線版）
 // =======================
 function initParticles(){
 
-  const canvas=document.getElementById("bg");
-  const ctx=canvas.getContext("2d");
+  const c=document.getElementById("bg");
+  const ctx=c.getContext("2d");
 
   function resize(){
-    canvas.width=window.innerWidth;
-    canvas.height=window.innerHeight;
+    c.width=window.innerWidth;
+    c.height=window.innerHeight;
   }
   resize();
   window.addEventListener("resize",resize);
 
   const p=[];
-  for(let i=0;i<120;i++){
+  for(let i=0;i<100;i++){
     p.push({
-      x:Math.random()*canvas.width,
-      y:Math.random()*canvas.height,
+      x:Math.random()*c.width,
+      y:Math.random()*c.height,
       dx:(Math.random()-0.5),
-      dy:(Math.random()-0.5),
-      r:Math.random()*2+1
+      dy:(Math.random()-0.5)
     });
   }
 
-  function animate(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+  function draw(){
+    ctx.clearRect(0,0,c.width,c.height);
 
-    for(let i of p){
-      i.x+=i.dx;
-      i.y+=i.dy;
-
-      if(i.x<0||i.x>canvas.width) i.dx*=-1;
-      if(i.y<0||i.y>canvas.height) i.dy*=-1;
+    // 點
+    p.forEach(a=>{
+      a.x+=a.dx;
+      a.y+=a.dy;
 
       ctx.fillStyle="cyan";
-      ctx.beginPath();
-      ctx.arc(i.x,i.y,i.r,0,Math.PI*2);
-      ctx.fill();
+      ctx.fillRect(a.x,a.y,2,2);
+    });
+
+    // 線（距離連線）
+    for(let i=0;i<p.length;i++){
+      for(let j=i+1;j<p.length;j++){
+        const dx=p[i].x-p[j].x;
+        const dy=p[i].y-p[j].y;
+        const dist=Math.sqrt(dx*dx+dy*dy);
+
+        if(dist<100){
+          ctx.strokeStyle="rgba(0,255,255,0.2)";
+          ctx.beginPath();
+          ctx.moveTo(p[i].x,p[i].y);
+          ctx.lineTo(p[j].x,p[j].y);
+          ctx.stroke();
+        }
+      }
     }
 
-    requestAnimationFrame(animate);
+    requestAnimationFrame(draw);
   }
 
-  animate();
+  draw();
 }
 
 // =======================
-// 🎮 熱門遊戲
+// 🎮 games
 // =======================
 function loadGames(){
-
   const list=["Elden Ring","Cyberpunk 2077","GTA V"];
+  const div=document.getElementById("games");
 
   list.forEach(g=>{
     const d=document.createElement("div");
@@ -192,6 +204,6 @@ function loadGames(){
       document.getElementById("input").value=g;
       send();
     };
-    gamesDiv.appendChild(d);
+    div.appendChild(d);
   });
 }
