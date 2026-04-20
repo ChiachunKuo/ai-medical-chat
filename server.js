@@ -10,72 +10,60 @@ const MODELS = [
   "llama-3.1-8b-instant"
 ];
 
-async function askGroq(message, index = 0) {
-  const model = MODELS[index];
+// 🤖 AI問診
+async function askGroq(msg, i = 0) {
+  const model = MODELS[i];
 
-  const res = await fetch(
-    "https://api.groq.com/openai/v1/chat/completions",
-    {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model,
-        messages: [
-          {
-            role: "system",
-            content: `
-你是台灣醫療AI助手：
-- 必須使用繁體中文
-- 不可做醫療診斷
-- 回答格式固定：
+  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        {
+          role: "system",
+          content: `
+你是台灣醫療AI：
+- 使用繁體中文
+- 不可診斷疾病
+- 只做初步分診
 
+輸出格式：
 【可能原因】
-【建議處理】
 【建議科別】
-【嚴重程度（輕微/中等/緊急）】
+【建議處理】
+【嚴重程度】
+
+最後請附一句：
+👉 建議就醫：是 / 否
 `
-          },
-          { role: "user", content: message }
-        ],
-        temperature: 0.4
-      })
-    }
-  );
+        },
+        { role: "user", content: msg }
+      ]
+    })
+  });
 
   const data = await res.json();
 
-  // ❗ 如果模型失敗 → 自動換下一個
   if (data.error) {
-    console.log(`MODEL FAIL: ${model}`, data.error.message);
-
-    if (index < MODELS.length - 1) {
-      return askGroq(message, index + 1);
-    }
-
-    return {
-      reply: "❌ AI模型全部失敗：" + data.error.message
-    };
+    if (i < MODELS.length - 1) return askGroq(msg, i + 1);
+    return { reply: "AI錯誤：" + data.error.message };
   }
 
-  return {
-    reply: data.choices?.[0]?.message?.content || "無回應"
-  };
+  return { reply: data.choices?.[0]?.message?.content };
 }
 
+// 🧠 chat
 app.post("/chat", async (req, res) => {
   try {
     const result = await askGroq(req.body.message);
     res.json(result);
-  } catch (err) {
-    res.json({
-      reply: "❌ 系統錯誤：" + err.message
-    });
+  } catch (e) {
+    res.json({ reply: "系統錯誤：" + e.message });
   }
 });
 
-app.listen(3000, () => {
-  console.log("Medical AI running (Groq latest model)");
-});
+app.listen(3000, () => console.log("Medical AI V2 running"));
