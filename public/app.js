@@ -1,12 +1,12 @@
-window.onload = () => {
+document.addEventListener("DOMContentLoaded", () => {
   initParticles();
   loadGames();
-};
+});
 
 const chat = document.getElementById("chat");
 
 // =======================
-// 打字機
+// 打字動畫
 // =======================
 function typeAI(text) {
   const d = document.createElement("div");
@@ -18,7 +18,7 @@ function typeAI(text) {
     if (i < text.length) {
       d.innerText += text[i++];
       chat.scrollTop = chat.scrollHeight;
-      setTimeout(t, 10);
+      setTimeout(t, 12);
     } else {
       d.classList.remove("typing");
     }
@@ -27,56 +27,51 @@ function typeAI(text) {
 }
 
 // =======================
-// 粒子（100%顯示）
+// 粒子（保證顯示）
 // =======================
 function initParticles() {
-  const c = document.getElementById("bg");
-  const ctx = c.getContext("2d");
+  const canvas = document.getElementById("bg");
+  const ctx = canvas.getContext("2d");
 
   function resize() {
-    c.width = window.innerWidth;
-    c.height = window.innerHeight;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
   }
   resize();
-  window.onresize = resize;
+  window.addEventListener("resize", resize);
 
-  let p = [];
-  for (let i = 0; i < 120; i++) {
-    p.push({
-      x: Math.random() * c.width,
-      y: Math.random() * c.height,
-      dx: (Math.random() - 0.5),
-      dy: (Math.random() - 0.5)
-    });
-  }
+  const particles = Array.from({ length: 120 }, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    vx: (Math.random() - 0.5) * 1.2,
+    vy: (Math.random() - 0.5) * 1.2
+  }));
+
+  let mouse = { x: 0, y: 0 };
+  window.addEventListener("mousemove", e => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+  });
 
   function draw() {
-    ctx.clearRect(0, 0, c.width, c.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    for (let i = 0; i < p.length; i++) {
-      let a = p[i];
-      a.x += a.dx;
-      a.y += a.dy;
+    particles.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+
+      const dx = mouse.x - p.x;
+      const dy = mouse.y - p.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist < 120) {
+        p.x += dx * 0.01;
+        p.y += dy * 0.01;
+      }
 
       ctx.fillStyle = "cyan";
-      ctx.fillRect(a.x, a.y, 2, 2);
-
-      // 連線
-      for (let j = i + 1; j < p.length; j++) {
-        let b = p[j];
-        let dx = a.x - b.x;
-        let dy = a.y - b.y;
-        let dist = Math.sqrt(dx * dx + dy * dy);
-
-        if (dist < 100) {
-          ctx.strokeStyle = "rgba(0,255,255,0.2)";
-          ctx.beginPath();
-          ctx.moveTo(a.x, a.y);
-          ctx.lineTo(b.x, b.y);
-          ctx.stroke();
-        }
-      }
-    }
+      ctx.fillRect(p.x, p.y, 2, 2);
+    });
 
     requestAnimationFrame(draw);
   }
@@ -85,13 +80,15 @@ function initParticles() {
 }
 
 // =======================
-// Steam
+// Steam（價格+評分）
 // =======================
 async function getSteam(game) {
-
   const s = await fetch(`/steam/search?game=${game}`);
   const g = await s.json();
-  if (!g) { typeAI("找不到Steam遊戲"); return; }
+  if (!g) {
+    typeAI("找不到遊戲資料");
+    return;
+  }
 
   const id = g.id;
 
@@ -99,23 +96,21 @@ async function getSteam(game) {
   const d = await det.json();
 
   typeAI(`🎮 ${d.name}`);
-  typeAI(`💰 ${d.is_free ? "免費" : d.price_overview?.final_formatted}`);
+  typeAI(`💰 ${d.is_free ? "免費" : d.price_overview?.final_formatted || "無資料"}`);
 
   const rev = await fetch(`/steam/reviews?appid=${id}`);
   const r = await rev.json();
 
-  const sum = r.query_summary;
-  if (sum) {
-    typeAI(`⭐ ${sum.review_score_desc}`);
-    typeAI(`👍 ${sum.total_positive} / 👎 ${sum.total_negative}`);
+  if (r.query_summary) {
+    typeAI(`⭐ ${r.query_summary.review_score_desc}`);
+    typeAI(`👍 ${r.query_summary.total_positive} / 👎 ${r.query_summary.total_negative}`);
   }
 }
 
 // =======================
-// send
+// 發送
 // =======================
 window.send = async () => {
-
   const input = document.getElementById("input");
   const text = input.value.trim();
   if (!text) return;
@@ -127,12 +122,12 @@ window.send = async () => {
 
   input.value = "";
 
-  typeAI("⏳ AI思考中...");
+  typeAI("⏳ AI 分析中...");
 
   const r = await fetch("/chat", {
     method: "POST",
     headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({message: text})
+    body: JSON.stringify({ message: text })
   });
 
   const d = await r.json();
@@ -143,25 +138,24 @@ window.send = async () => {
 };
 
 // =======================
-// 熱門遊戲
+// 熱門榜
 // =======================
 async function loadGames() {
-
   const res = await fetch("/games");
   const list = await res.json();
 
   const div = document.getElementById("games");
 
   list.forEach(g => {
-    const d = document.createElement("div");
-    d.className = "game";
-    d.innerText = g;
+    const el = document.createElement("div");
+    el.className = "game";
+    el.innerText = g;
 
-    d.onclick = () => {
+    el.onclick = () => {
       document.getElementById("input").value = g;
       send();
     };
 
-    div.appendChild(d);
+    div.appendChild(el);
   });
 }
