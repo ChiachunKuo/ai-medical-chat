@@ -6,13 +6,12 @@ app.use(express.json());
 app.use(express.static("public"));
 
 const MODELS = [
-  "llama3-70b-8192-preview",
-  "llama3-8b-8192",
-  "mixtral-8x7b-32768"
+  "llama-3.3-70b-versatile",
+  "llama-3.1-8b-instant"
 ];
 
-async function callGroq(msg, modelIndex = 0) {
-  const model = MODELS[modelIndex];
+async function askGroq(message, index = 0) {
+  const model = MODELS[index];
 
   const res = await fetch(
     "https://api.groq.com/openai/v1/chat/completions",
@@ -28,34 +27,37 @@ async function callGroq(msg, modelIndex = 0) {
           {
             role: "system",
             content: `
-你是台灣醫療AI：
-- 使用繁體中文
-- 不可診斷疾病
-- 分析症狀並分類：
+你是台灣醫療AI助手：
+- 必須使用繁體中文
+- 不可做醫療診斷
+- 回答格式固定：
+
 【可能原因】
 【建議處理】
 【建議科別】
-【嚴重程度】
+【嚴重程度（輕微/中等/緊急）】
 `
           },
-          { role: "user", content: msg }
+          { role: "user", content: message }
         ],
-        temperature: 0.5
+        temperature: 0.4
       })
     }
   );
 
   const data = await res.json();
 
-  // 🔥 如果模型壞掉 → 自動換下一個
+  // ❗ 如果模型失敗 → 自動換下一個
   if (data.error) {
-    console.log("MODEL ERROR:", model, data.error.message);
+    console.log(`MODEL FAIL: ${model}`, data.error.message);
 
-    if (modelIndex < MODELS.length - 1) {
-      return callGroq(msg, modelIndex + 1);
+    if (index < MODELS.length - 1) {
+      return askGroq(message, index + 1);
     }
 
-    return { reply: "❌ AI模型全部失敗：" + data.error.message };
+    return {
+      reply: "❌ AI模型全部失敗：" + data.error.message
+    };
   }
 
   return {
@@ -65,14 +67,15 @@ async function callGroq(msg, modelIndex = 0) {
 
 app.post("/chat", async (req, res) => {
   try {
-    const result = await callGroq(req.body.message);
+    const result = await askGroq(req.body.message);
     res.json(result);
   } catch (err) {
-    console.log(err);
-    res.json({ reply: "❌ 系統錯誤：" + err.message });
+    res.json({
+      reply: "❌ 系統錯誤：" + err.message
+    });
   }
 });
 
 app.listen(3000, () => {
-  console.log("Medical AI running (fixed model)");
+  console.log("Medical AI running (Groq latest model)");
 });
