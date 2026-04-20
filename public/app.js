@@ -1,12 +1,25 @@
+document.addEventListener("DOMContentLoaded", () => {
+  initParticles();
+});
+
 function agree(){
   document.getElementById("consent").style.display="none";
-  document.getElementById("app").style.display="block";
 }
 
 function leave(){
-  window.location.href="https://www.google.com";
+  window.location.href="https://google.com";
 }
 
+const chat = document.getElementById("chat");
+
+function add(role, text){
+  const d = document.createElement("div");
+  d.className = role==="user"?"user":"card";
+  d.innerText = text;
+  chat.appendChild(d);
+}
+
+// AI
 async function send(){
   const input = document.getElementById("input");
   const text = input.value;
@@ -22,13 +35,37 @@ async function send(){
   const d = await r.json();
   add("ai", d.reply);
 
-  // 導向地圖
-  window.open(`https://www.google.com/maps/search/${encodeURIComponent("醫院")}`);
+  window.open("https://www.google.com/maps/search/醫院");
 }
 
-function add(role, text){
-  const div = document.createElement("div");
-  div.className = role;
-  div.innerText = text;
-  document.getElementById("chat").appendChild(div);
+// 粒子
+function initParticles(){
+  const c = document.getElementById("bg");
+  const ctx = c.getContext("2d");
+
+  function resize(){
+    c.width = window.innerWidth;
+    c.height = window.innerHeight;
+  }
+  resize();
+  window.onresize = resize;
+
+  let p = Array.from({length:100},()=>({
+    x:Math.random()*c.width,
+    y:Math.random()*c.height,
+    vx:(Math.random()-0.5),
+    vy:(Math.random()-0.5)
+  }));
+
+  function draw(){
+    ctx.clearRect(0,0,c.width,c.height);
+    p.forEach(a=>{
+      a.x+=a.vx;
+      a.y+=a.vy;
+      ctx.fillStyle="cyan";
+      ctx.fillRect(a.x,a.y,2,2);
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
 }
