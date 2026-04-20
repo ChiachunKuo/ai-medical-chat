@@ -21,12 +21,13 @@ app.post("/chat", async (req, res) => {
           {
             role: "system",
             content: `
-你是醫療問診AI：
-1. 使用繁體中文
-2. 不可做醫療診斷
-3. 判斷嚴重程度（輕微 / 建議就醫 / 緊急）
-4. 建議科別
-5. 提供簡單自我處理方式
+你是醫療輔助AI：
+- 使用繁體中文
+- 不可做診斷
+- 回答格式：
+【評估】輕微 / 建議就醫 / 緊急
+【建議】...
+【科別】...
 `
           },
           { role: "user", content: msg }
@@ -35,11 +36,11 @@ app.post("/chat", async (req, res) => {
     });
 
     const data = await r.json();
-    res.json({ reply: data.choices[0].message.content });
+    res.json({ reply: data.choices?.[0]?.message?.content || "系統忙碌" });
 
   } catch {
-    res.json({ reply: "系統忙碌中，請稍後再試" });
+    res.json({ reply: "系統錯誤" });
   }
 });
 
-app.listen(3000);
+app.listen(3000, () => console.log("Medical AI running"));
