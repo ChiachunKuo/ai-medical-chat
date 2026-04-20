@@ -1,31 +1,24 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>GAME GUIDE AI</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>醫療AI</title>
+<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<!-- 粒子 -->
-<canvas id="bg"></canvas>
+<div id="consent">
+  <h2>醫療聲明</h2>
+  <p>本系統僅供參考，不可替代醫師診斷</p>
+  <button onclick="agree()">同意</button>
+  <button onclick="leave()">不同意</button>
+</div>
 
-<div class="layout">
-
-  <div class="chat-area">
-    <div id="chat"></div>
-
-    <input id="input" placeholder="輸入遊戲名稱...">
-    <button onclick="send()">送出</button>
-    <button onclick="startVoice()">🎤</button>
-  </div>
-
-  <div class="side">
-    <h3>🔥 熱門遊戲</h3>
-    <div id="games"></div>
-  </div>
-
+<div id="app" style="display:none">
+  <div id="chat"></div>
+  <input id="input">
+  <button onclick="send()">送出</button>
 </div>
 
 <script src="app.js"></script>
