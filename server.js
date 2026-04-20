@@ -8,7 +8,7 @@ app.use(express.json());
 app.use(express.static("public"));
 
 // =======================
-// 🤖 Groq AI（繁體控制）
+// 🤖 Groq（強化版）
 // =======================
 app.post("/chat", async (req, res) => {
   const msg = req.body.message;
@@ -25,18 +25,22 @@ app.post("/chat", async (req, res) => {
         messages: [
           {
             role: "system",
-            content: "請使用繁體中文回答，若內容為英文遊戲專有名詞請保留英文，不要使用簡體中文。回答精簡。"
+            content: `
+你是專業遊戲攻略 AI：
+1. 必須使用繁體中文（禁止簡體）
+2. 遊戲專有名詞保留英文
+3. 回答要精準且簡短（重點式）
+4. 提供玩法建議 + 新手技巧
+5. 不確定的資訊不要亂編
+`
           },
-          {
-            role: "user",
-            content: msg
-          }
+          { role: "user", content: msg }
         ]
       })
     });
 
     const data = await r.json();
-    res.json({ reply: data.choices[0].message.content });
+    res.json({ reply: data.choices?.[0]?.message?.content || "AI 無回應" });
 
   } catch {
     res.json({ reply: "AI 暫時無法使用" });
@@ -44,26 +48,20 @@ app.post("/chat", async (req, res) => {
 });
 
 // =======================
-// Steam 搜尋
+// Steam API
 // =======================
 app.get("/steam/search", async (req, res) => {
-  const r = await fetch(`https://store.steampowered.com/api/storesearch/?term=${req.query.game}`);
+  const r = await fetch(`https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(req.query.game)}`);
   const d = await r.json();
   res.json(d.items?.[0] || null);
 });
 
-// =======================
-// Steam 詳細
-// =======================
 app.get("/steam/details", async (req, res) => {
   const r = await fetch(`https://store.steampowered.com/api/appdetails?appids=${req.query.appid}`);
   const d = await r.json();
   res.json(d[req.query.appid].data);
 });
 
-// =======================
-// Steam 評論
-// =======================
 app.get("/steam/reviews", async (req, res) => {
   const r = await fetch(`https://store.steampowered.com/appreviews/${req.query.appid}?json=1`);
   const d = await r.json();
@@ -71,16 +69,16 @@ app.get("/steam/reviews", async (req, res) => {
 });
 
 // =======================
-// 熱門遊戲（簡單榜）
+// 熱門榜（穩定版）
 // =======================
 app.get("/games", (req, res) => {
   res.json([
     "Elden Ring",
     "Cyberpunk 2077",
     "GTA V",
-    "Helldivers 2",
-    "Palworld"
+    "Red Dead Redemption 2",
+    "Helldivers 2"
   ]);
 });
 
-app.listen(3000, () => console.log("V11 running"));
+app.listen(3000, () => console.log("V11 FIX RUNNING"));
