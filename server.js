@@ -5,76 +5,74 @@ const app = express();
 app.use(express.json());
 app.use(express.static("public"));
 
-app.post("/chat", async (req, res) => {
-  const msg = req.body.message;
+const MODELS = [
+  "llama3-70b-8192-preview",
+  "llama3-8b-8192",
+  "mixtral-8x7b-32768"
+];
 
-  if (!process.env.GROQ_API_KEY) {
-    return res.json({
-      reply: "❌ 系統未設定 GROQ_API_KEY（請到 Render / .env 設定）"
-    });
-  }
+async function callGroq(msg, modelIndex = 0) {
+  const model = MODELS[modelIndex];
 
-  try {
-    const response = await fetch(
-      "https://api.groq.com/openai/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          model: "llama3-70b-8192",
-          messages: [
-            {
-              role: "system",
-              content: `
-你是台灣醫療輔助AI：
+  const res = await fetch(
+    "https://api.groq.com/openai/v1/chat/completions",
+    {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model,
+        messages: [
+          {
+            role: "system",
+            content: `
+你是台灣醫療AI：
 - 使用繁體中文
-- 不可診斷
-- 必須清楚分類：
+- 不可診斷疾病
+- 分析症狀並分類：
 【可能原因】
 【建議處理】
 【建議科別】
-【是否需要就醫（輕微/中等/緊急）】
-              `
-            },
-            { role: "user", content: msg }
-          ],
-          temperature: 0.5
-        })
-      }
-    );
+【嚴重程度】
+`
+          },
+          { role: "user", content: msg }
+        ],
+        temperature: 0.5
+      })
+    }
+  );
 
-    const data = await response.json();
+  const data = await res.json();
 
-    // 🔥 重要：錯誤檢查
-    if (data.error) {
-      console.log("GROQ ERROR:", data.error);
-      return res.json({
-        reply: "❌ AI回傳錯誤：" + data.error.message
-      });
+  // 🔥 如果模型壞掉 → 自動換下一個
+  if (data.error) {
+    console.log("MODEL ERROR:", model, data.error.message);
+
+    if (modelIndex < MODELS.length - 1) {
+      return callGroq(msg, modelIndex + 1);
     }
 
-    const text = data?.choices?.[0]?.message?.content;
+    return { reply: "❌ AI模型全部失敗：" + data.error.message };
+  }
 
-    if (!text) {
-      return res.json({
-        reply: "❌ AI沒有回傳內容（可能模型或API異常）"
-      });
-    }
+  return {
+    reply: data.choices?.[0]?.message?.content || "無回應"
+  };
+}
 
-    res.json({ reply: text });
-
+app.post("/chat", async (req, res) => {
+  try {
+    const result = await callGroq(req.body.message);
+    res.json(result);
   } catch (err) {
-    console.log("SERVER ERROR:", err);
-
-    res.json({
-      reply: "❌ 伺服器錯誤：" + err.message
-    });
+    console.log(err);
+    res.json({ reply: "❌ 系統錯誤：" + err.message });
   }
 });
 
 app.listen(3000, () => {
-  console.log("Medical AI running...");
+  console.log("Medical AI running (fixed model)");
 });
