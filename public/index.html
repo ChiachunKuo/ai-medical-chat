@@ -1,24 +1,48 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
-<title>醫療AI</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智慧醫療 AI</title>
 <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
+<!-- 醫療聲明 -->
 <div id="consent">
-  <h2>醫療聲明</h2>
-  <p>本系統僅供參考，不可替代醫師診斷</p>
-  <button onclick="agree()">同意</button>
-  <button onclick="leave()">不同意</button>
+  <div class="modal">
+    <h2>醫療聲明</h2>
+    <p>本系統僅提供健康建議，不能取代專業醫師診斷</p>
+    <button onclick="agree()">同意</button>
+    <button onclick="leave()">不同意</button>
+  </div>
 </div>
 
-<div id="app" style="display:none">
-  <div id="chat"></div>
-  <input id="input">
-  <button onclick="send()">送出</button>
+<!-- 主畫面 -->
+<div id="app">
+
+  <!-- 左側（電腦用） -->
+  <div id="left">
+    <h2>🩺 智慧醫療 AI</h2>
+    <div id="chat"></div>
+
+    <div class="input-box">
+      <input id="input" placeholder="請輸入症狀...">
+      <button onclick="send()">送出</button>
+    </div>
+  </div>
+
+  <!-- 右側（電腦用） -->
+  <div id="right">
+    <h3>📍 快速功能</h3>
+    <button onclick="openMap()">附近醫院</button>
+    <button onclick="clearChat()">清除紀錄</button>
+
+    <h3>🧾 搜尋紀錄</h3>
+    <div id="history"></div>
+  </div>
+
 </div>
 
 <script src="app.js"></script>
