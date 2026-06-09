@@ -18,28 +18,28 @@ export async function analyzePrompt(message) {
       },
 
       messages: [
-        {
-          role: "system",
-          content: `
-你是遊戲推薦AI。
+  {
+    role: "system",
+    content: `
+請分析玩家需求並回傳JSON格式
 
-請分析玩家需求。
-
-回傳：
+json格式:
 
 {
-  "keywords":[],
-  "genres":[],
-  "mood":"",
-  "reason":""
+  "genres": [],
+  "keywords": [],
+  "mood": "",
+  "reason": ""
 }
+
+只輸出json
 `
-        },
-        {
-          role: "user",
-          content: message
-        }
-      ]
+  },
+  {
+    role: "user",
+    content: prompt
+  }
+]
     });
 
   return JSON.parse(
