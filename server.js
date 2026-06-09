@@ -81,7 +81,27 @@ const steamTagRules = [
   { patterns: ["co-op", "coop", "合作", "多人"], tag: 1685, label: "合作遊戲" },
   { patterns: ["puzzle", "解謎"], tag: 1664, label: "解謎" },
   { patterns: ["racing", "race", "賽車", "競速"], tag: 699, label: "競速賽車" },
-  { patterns: ["action", "adventure", "動作", "冒險"], tag: 19, label: "動作冒險" }
+  { patterns: ["action", "adventure", "動作", "冒險"], tag: 19, label: "動作冒險" },
+  {
+  patterns:["rpg","角色扮演"],
+  tag:122,
+  label:"RPG"
+},
+{
+  patterns:["open world","開放世界"],
+  tag:1695,
+  label:"開放世界"
+},
+{
+  patterns:["strategy","策略"],
+  tag:9,
+  label:"策略"
+},
+{
+  patterns:["simulation","模擬"],
+  tag:599,
+  label:"模擬"
+}
 ];
 
 const suggestionConcepts = [
@@ -892,9 +912,9 @@ async function handleChat(req,res){
       );
 
     const rawgGames =
-      await searchGames(
-        ai.keywords || []
-      );
+  await searchGames(
+    ai.genres || []
+  );
 
     const games =
       rawgGames.map(
