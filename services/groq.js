@@ -18,12 +18,14 @@ export async function analyzePrompt(message) {
       },
 
       messages: [
-  {
-    role: "system",
-    content: `
-請分析玩家需求並回傳JSON格式
+        {
+          role: "system",
+          content: `
+請分析玩家想玩的遊戲類型。
 
-json格式:
+必須回傳 json。
+
+格式：
 
 {
   "genres": [],
@@ -32,14 +34,31 @@ json格式:
   "reason": ""
 }
 
+genres只能使用：
+
+RPG
+Action
+Adventure
+Shooter
+FPS
+Open World
+Survival
+Horror
+Puzzle
+Strategy
+Simulation
+Racing
+Sandbox
+Co-op
+
 只輸出json
 `
-  },
-  {
-    role: "user",
-    content: message
-  }
-]
+        },
+        {
+          role: "user",
+          content: message
+        }
+      ]
     });
 
   return JSON.parse(
