@@ -938,23 +938,7 @@ ${ai.reason}
     );
   }
 }
-  sendJson(res, 200, {
-    reply: buildRecommendationReply(message, result.games, result.source, result.fallbackReason, result.matchedSuggestion, result.suggestions),
-    source: result.source,
-    fallbackReason: result.fallbackReason || null,
-    cache: {
-      entries: gameCache.size,
-      hit: result.cacheHit,
-      lastClearedAt: lastCacheClearAt.toISOString(),
-      ttlHours: cacheTtlMs / 1000 / 60 / 60,
-      clearsEveryDays: cacheClearIntervalMs / 1000 / 60 / 60 / 24
-    },
-    suggestions: result.suggestions || [],
-    matchedSuggestion: result.matchedSuggestion || null,
-    games: result.games
-  });
-}
-
+  
 const server = createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
 
