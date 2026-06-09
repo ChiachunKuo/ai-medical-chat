@@ -2,6 +2,15 @@ import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import dotenv from "dotenv";
+
+import { analyzePrompt }
+from "./services/groq.js";
+
+import { searchGames }
+from "./services/rawg.js";
+
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -802,26 +811,133 @@ function buildRecommendationReply(message, games, source, fallbackReason, matche
   ].join("\n");
 }
 
-async function handleChat(req, res) {
+function normalizeRawgGame(game) {
+
+  return {
+    id: game.id,
+    appid: game.id,
+
+    name: game.name,
+
+    category:
+      game.genres?.[0]?.name ||
+      "Game",
+
+    score:
+      game.rating
+        ? `評分 ${game.rating}`
+        : "RAWG",
+
+    img:
+      game.background_image,
+
+    url:
+      `https://rawg.io/games/${game.slug}`,
+
+    releaseDate:
+      game.released || ""
+  };
+}
+
+async function handleChat(req,res){
+
   let payload;
 
-  try {
-    const body = await readRequestBody(req);
-    payload = body ? JSON.parse(body) : {};
-  } catch {
-    sendJson(res, 400, { reply: "請傳送正確的 JSON 格式。" });
+  try{
+
+    const body =
+      await readRequestBody(req);
+
+    payload =
+      body
+        ? JSON.parse(body)
+        : {};
+
+  }catch{
+
+    sendJson(
+      res,
+      400,
+      {
+        reply:"JSON格式錯誤"
+      }
+    );
+
     return;
   }
 
-  const message = String(payload.message || "").trim();
+  const message =
+    String(
+      payload.message || ""
+    ).trim();
 
-  if (!message) {
-    sendJson(res, 400, { reply: "請先輸入你喜歡的遊戲類型、關鍵字或遊戲名稱。" });
+  if(!message){
+
+    sendJson(
+      res,
+      400,
+      {
+        reply:"請輸入內容"
+      }
+    );
+
     return;
   }
 
-  const result = await getGamesForInterest(message);
+  try{
 
+    const ai =
+      await analyzePrompt(
+        message
+      );
+
+    const rawgGames =
+      await searchGames(
+        ai.keywords || []
+      );
+
+    const games =
+      rawgGames.map(
+        normalizeRawgGame
+      );
+
+    sendJson(
+      res,
+      200,
+      {
+
+        reply:
+`
+AI分析完成
+
+風格：
+${(ai.genres || []).join("、")}
+
+情緒：
+${ai.mood}
+
+推薦原因：
+${ai.reason}
+`,
+
+        analysis: ai,
+
+        games
+      }
+    );
+
+  }catch(error){
+
+    sendJson(
+      res,
+      500,
+      {
+        reply:
+          error.message
+      }
+    );
+  }
+}
   sendJson(res, 200, {
     reply: buildRecommendationReply(message, result.games, result.source, result.fallbackReason, result.matchedSuggestion, result.suggestions),
     source: result.source,
