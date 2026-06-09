@@ -37,7 +37,7 @@ json格式:
   },
   {
     role: "user",
-    content: prompt
+    content: message
   }
 ]
     });
