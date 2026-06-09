@@ -1,0 +1,446 @@
+body{
+  margin:0;
+  background:#0a0a0a;
+  color:white;
+  font-family:Arial;
+  overflow:hidden;
+}
+
+#particles-js{
+  position:fixed;
+  width:100%;
+  height:100%;
+  z-index:0;
+}
+
+#layout{
+  position:relative;
+  z-index:2;
+  display:flex;
+  height:100vh;
+}
+
+/* 🎮 左側 */
+#left-panel{
+  flex:3;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  background:rgba(0,0,0,0.4);
+}
+
+/* 🔥 分類 */
+#categories{
+  display:flex;
+  gap:10px;
+  overflow-x:auto;
+  padding:12px;
+  background:#111;
+  border-bottom:1px solid #222;
+}
+
+#refresh-status{
+  min-height:18px;
+  padding:8px 14px;
+  background:#0d0d0d;
+  border-bottom:1px solid #222;
+  color:#9ca3af;
+  font-size:13px;
+}
+
+.category-btn{
+  padding:8px 14px;
+  border:none;
+  border-radius:20px;
+  background:#222;
+  color:white;
+  cursor:pointer;
+  white-space:nowrap;
+}
+
+.category-btn:hover{
+  background:#22c55e;
+}
+
+/* 🎮 遊戲區 */
+#games{
+  flex:1;
+  overflow-y:auto;
+  padding:16px;
+
+  display:grid;
+  grid-template-columns: repeat(2,1fr);
+  grid-auto-rows:max-content;
+  gap:14px;
+  align-content:start;
+  align-items:start;
+}
+
+/* 🎮 卡片 */
+.game{
+  background:#111;
+  border-radius:12px;
+  overflow:hidden;
+  cursor:pointer;
+  transition:.25s;
+  display:grid;
+  grid-template-rows:clamp(240px, 18vw, 340px) auto;
+  min-width:0;
+  position:relative;
+  align-self:start;
+}
+
+.game:hover{
+  box-shadow:0 0 20px rgba(0,255,255,0.2);
+}
+
+/* 🖼 圖片 */
+.game-image{
+  width:100%;
+  height:100%;
+  min-height:240px;
+  overflow:hidden;
+  background:#050505;
+}
+
+.game-image img{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center;
+}
+
+.game > img{
+  display:block;
+  width:100%;
+  height:100%;
+  min-height:240px;
+  object-fit:cover;
+  object-position:center;
+}
+
+/* 🎮 資訊 */
+.game-info{
+  flex:0 0 auto;
+  padding:10px;
+  position:relative;
+  z-index:1;
+  background:#111;
+}
+
+.game-title{
+  font-size:15px;
+  font-weight:bold;
+  line-height:1.35;
+  overflow-wrap:anywhere;
+}
+
+.game-score{
+  color:#22c55e;
+  margin-top:5px;
+}
+
+.game-category{
+  margin-top:5px;
+  color:#aaa;
+  font-size:13px;
+  line-height:1.4;
+  overflow-wrap:anywhere;
+}
+
+.steam-link{
+  display:inline-block;
+  margin-top:10px;
+  color:#66c0f4;
+  font-size:13px;
+  text-decoration:none;
+}
+
+.steam-link:hover{
+  text-decoration:underline;
+}
+
+.empty-state{
+  grid-column:1/-1;
+  align-self:center;
+  justify-self:center;
+  color:#bbb;
+  padding:24px;
+  text-align:center;
+}
+
+/* 💬 右側 */
+#chat-area{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  background:#000;
+  border-left:1px solid #222;
+}
+
+#chat{
+  flex:1;
+  overflow-y:auto;
+  padding:10px;
+}
+
+.user{
+  text-align:right;
+  margin:6px;
+}
+
+/* 🤖 AI */
+.ai{
+  background:#1a1a1a;
+  margin:6px;
+  padding:10px;
+  border-radius:10px;
+  line-height:1.7;
+  white-space:pre-line;
+}
+
+.ai a{
+  color:#22c55e;
+}
+
+#input-area{
+  display:flex;
+}
+
+#input-shell{
+  position:relative;
+  border-top:1px solid #1f2937;
+}
+
+input{
+  flex:1;
+  padding:12px;
+  border:none;
+  outline:none;
+}
+
+#suggestions{
+  display:none;
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:100%;
+  z-index:6;
+  max-height:260px;
+  overflow:auto;
+  border:1px solid #243244;
+  background:#111827;
+  box-shadow:0 -10px 24px rgba(0,0,0,.35);
+}
+
+#suggestions.visible{
+  display:block;
+}
+
+.suggestion-item{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  width:100%;
+  padding:10px 12px;
+  border-bottom:1px solid #1f2937;
+  background:#111827;
+  color:white;
+  text-align:left;
+}
+
+.suggestion-item:hover,
+.suggestion-item.active{
+  background:#1f2937;
+}
+
+.suggestion-label{
+  overflow:hidden;
+  font-weight:700;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.suggestion-meta{
+  flex:0 0 auto;
+  color:#93c5fd;
+  font-size:12px;
+  white-space:nowrap;
+}
+
+button{
+  padding:12px;
+  background:#22c55e;
+  border:none;
+  color:white;
+  cursor:pointer;
+}
+
+#reset-profile{
+  white-space:nowrap;
+}
+
+#show-logs{
+  white-space:nowrap;
+}
+
+#consent-modal{
+  position:fixed;
+  inset:0;
+  z-index:10;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background:rgba(0,0,0,0.72);
+}
+
+.consent-panel{
+  width:min(520px,100%);
+  background:#111;
+  border:1px solid #333;
+  border-radius:8px;
+  padding:22px;
+  box-shadow:0 18px 50px rgba(0,0,0,0.55);
+}
+
+.consent-title{
+  font-size:20px;
+  font-weight:bold;
+  margin-bottom:12px;
+}
+
+.consent-body{
+  color:#ddd;
+  line-height:1.7;
+  font-size:14px;
+}
+
+.consent-actions{
+  display:flex;
+  gap:10px;
+  justify-content:flex-end;
+  margin-top:18px;
+}
+
+.secondary-btn{
+  background:#2b2b2b;
+}
+
+#diagnostics-modal{
+  position:fixed;
+  inset:0;
+  z-index:11;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background:rgba(0,0,0,0.76);
+}
+
+.diagnostics-panel{
+  width:min(860px,100%);
+  max-height:min(78vh,720px);
+  display:flex;
+  flex-direction:column;
+  background:#101010;
+  border:1px solid #333;
+  border-radius:8px;
+  box-shadow:0 18px 50px rgba(0,0,0,0.6);
+}
+
+.diagnostics-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:14px 16px;
+  border-bottom:1px solid #2a2a2a;
+}
+
+.diagnostics-title{
+  font-size:18px;
+  font-weight:bold;
+}
+
+.diagnostics-list{
+  overflow:auto;
+  padding:12px;
+}
+
+.diagnostics-empty{
+  color:#aaa;
+  padding:16px;
+}
+
+.diagnostics-item{
+  padding:12px;
+  margin-bottom:10px;
+  border:1px solid #2b2b2b;
+  border-radius:6px;
+  background:#171717;
+}
+
+.diagnostics-item.warn{
+  border-color:#9a6b12;
+}
+
+.diagnostics-item.error{
+  border-color:#b91c1c;
+}
+
+.diagnostics-meta{
+  color:#9ca3af;
+  font-size:12px;
+  margin-bottom:6px;
+}
+
+.diagnostics-message{
+  color:white;
+  margin-bottom:8px;
+}
+
+.diagnostics-details{
+  max-height:140px;
+  overflow:auto;
+  margin:0;
+  padding:8px;
+  color:#cbd5e1;
+  background:#0a0a0a;
+  border-radius:4px;
+  font-size:12px;
+  white-space:pre-wrap;
+}
+
+/* 📱 手機版 */
+@media(max-width:768px){
+
+  #layout{
+    flex-direction:column;
+  }
+
+  #left-panel{
+    height:55vh;
+  }
+
+  #chat-area{
+    height:45vh;
+  }
+
+  #games{
+    grid-template-columns:1fr;
+  }
+
+  .game{
+    grid-template-rows:clamp(180px, 45vw, 260px) auto;
+  }
+
+  .game-image,
+  .game > img{
+    min-height:180px;
+  }
+
+}
+

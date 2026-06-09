@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Steam Game Finder AI</title>
+
+  <link rel="stylesheet" href="style.css?v=20260527-preview3">
+
+  <!-- particles -->
+  <script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
+</head>
+
+<body>
+
+  <!-- 🌌 背景 -->
+  <div id="particles-js"></div>
+
+  <div id="layout">
+
+    <!-- 🎮 左側 -->
+    <div id="left-panel">
+
+      <!-- 分類 -->
+      <div id="categories"></div>
+
+      <div id="refresh-status"></div>
+
+      <!-- 遊戲 -->
+      <div id="games"></div>
+
+    </div>
+
+    <!-- 💬 聊天 -->
+    <div id="chat-area">
+
+      <div id="chat"></div>
+
+      <div id="input-shell">
+
+        <div id="input-area">
+
+          <input
+            id="input"
+            placeholder="輸入喜歡的遊戲感覺，例如 第三人稱賽車、合作恐怖..."
+            autocomplete="off"
+            aria-controls="suggestions"
+            aria-expanded="false"
+          >
+
+          <button id="send-button">
+            發送
+          </button>
+
+          <button id="reset-profile" class="secondary-btn" title="清除本機個人化推薦資料">
+            重設偏好
+          </button>
+
+          <button id="show-logs" class="secondary-btn" title="查看後端 Steam 診斷紀錄">
+            診斷
+          </button>
+
+        </div>
+
+        <div id="suggestions" role="listbox" aria-label="搜尋聯想"></div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <script src="app.js?v=20260527-preview3"></script>
+  <script src="particles-config.js"></script>
+
+</body>
+</html>
+
