@@ -15,6 +15,27 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const publicDir = path.join(__dirname, "Public");
+let currentGenres = [
+  "RPG",
+  "Action",
+  "Adventure",
+  "Open World",
+  "Survival",
+  "Strategy"
+];
+
+function updateHomeGenres(genres) {
+
+  if (
+    Array.isArray(genres) &&
+    genres.length > 0
+  ) {
+
+    currentGenres = genres;
+
+  }
+
+}
 const port = process.env.PORT || 3000;
 const host = process.env.HOST || "0.0.0.0";
 const cacheClearIntervalMs = 3 * 24 * 60 * 60 * 1000;
