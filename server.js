@@ -931,6 +931,10 @@ async function handleChat(req,res){
       await analyzePrompt(
         message
       );
+    
+    updateHomeGenres(
+  ai.genres
+);
 
     const rawgGames =
   await searchGames(
@@ -1029,3 +1033,15 @@ const server = createServer(async (req, res) => {
 server.listen(port, host, () => {
   console.log(`Game AI server running on ${host}:${port}`);
 });
+
+app.get(
+  "/api/home-genres",
+  (req, res) => {
+
+    res.json({
+      genres:
+        currentGenres
+    });
+
+  }
+);
