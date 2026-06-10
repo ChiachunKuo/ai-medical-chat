@@ -700,3 +700,51 @@ document.addEventListener("visibilitychange", () => {
     refreshCurrentGames();
   }
 });
+
+async function loadHomeGenres() {
+
+  try {
+
+    const response =
+      await fetch(
+        "/api/home-genres"
+      );
+
+    const data =
+      await response.json();
+
+    renderHomeGenres(
+      data.genres
+    );
+
+  } catch (err) {
+
+    console.error(err);
+
+  }
+
+}
+
+function renderHomeGenres(
+  genres
+) {
+
+  const container =
+    document.getElementById(
+      "homeGenres"
+    );
+
+  container.innerHTML =
+    genres
+      .map(
+        genre => `
+        <div
+          class="category-card">
+          ${genre}
+        </div>
+      `
+      )
+      .join("");
+
+}
+
