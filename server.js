@@ -1034,14 +1034,4 @@ server.listen(port, host, () => {
   console.log(`Game AI server running on ${host}:${port}`);
 });
 
-app.get(
-  "/api/home-genres",
-  (req, res) => {
 
-    res.json({
-      genres:
-        currentGenres
-    });
-
-  }
-);
