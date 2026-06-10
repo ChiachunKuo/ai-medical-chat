@@ -24,9 +24,9 @@ export async function searchGames(genres = []) {
     GENRE_MAP[genre] || "action";
 
   const response =
-    await fetch(
-      `https://api.rawg.io/api/games?key=${process.env.RAWG_KEY}&genres=${rawgGenre}&page_size=12`
-    );
+  await fetch(
+    `https://api.rawg.io/api/games?key=${process.env.RAWG_KEY}&genres=${rawgGenre}&page_size=40`
+  );
 
   if (!response.ok) {
     throw new Error(
