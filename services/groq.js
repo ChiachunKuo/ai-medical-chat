@@ -19,20 +19,11 @@ export async function analyzePrompt(message) {
 
       messages: [
         {
-          role: "system",
-          content: `
+  role: "system",
+  content: `
 請分析玩家想玩的遊戲類型。
 
 必須回傳 json。
-
-格式：
-
-{
-  role: "system",
-  content: `
-請分析玩家想玩的遊戲類型
-
-必須回傳 json
 
 格式：
 
@@ -41,27 +32,6 @@ export async function analyzePrompt(message) {
   "keywords": [],
   "mood": "",
   "reason": ""
-}
-
-genres只能從以下選擇：
-
-RPG
-Action
-Adventure
-Shooter
-FPS
-Open World
-Survival
-Horror
-Puzzle
-Strategy
-Simulation
-Racing
-Sandbox
-Co-op
-
-只輸出json
-`
 }
 
 genres只能使用：
@@ -83,11 +53,11 @@ Co-op
 
 只輸出json
 `
-        },
-        {
-          role: "user",
-          content: message
-        }
+},
+{
+  role: "user",
+  content: message
+}
       ]
     });
 
